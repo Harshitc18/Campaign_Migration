@@ -65,7 +65,6 @@ class PushMigrationRequest(BaseModel):
     campaign: Dict[str, Any] = Field(..., description="The root 'campaign' object from the Braze push JSON export.")
     moengage_credentials: MoEngageCredentials = Field(..., description="MoEngage API credentials for this request")
 
-
 # ==============================================================================
 # 3. CORE MIGRATION LOGIC (Adapted from the script)
 # ==============================================================================
@@ -87,26 +86,111 @@ class BrazeCdnToMoenageCdn:
         decoded_payload = payload.encode().decode('unicode_escape')
         decoded_payload = html.unescape(decoded_payload)
         
-        url_pattern = r"https:\/\/braze-images\.com\/[^\"\s,]+"
-        matches = re.findall(url_pattern, decoded_payload)
+        # Comprehensive patterns to catch ALL Braze-related image URLs
+        patterns = [
+            # Original braze-images.com domain
+            r"https:\/\/braze-images\.com\/[^\"\s,]+",
+            
+            # All braze.com subdomains (including cdn-staging, assets, etc.)
+            r"https:\/\/[a-zA-Z0-9-]+\.braze\.com\/[^\"\s,]+",
+            
+            # Braze social icons on S3
+            r"https:\/\/braze-social-icons\.s3\.amazonaws\.com\/[^\"\s,]+",
+            
+            # Other potential Braze S3 buckets
+            r"https:\/\/braze-[a-zA-Z0-9-]+\.s3\.amazonaws\.com\/[^\"\s,]+",
+            
+            # Braze CDN variations
+            r"https:\/\/cdn[a-zA-Z0-9-]*\.braze\.com\/[^\"\s,]+",
+            
+            # Assets subdomain variations
+            r"https:\/\/assets[a-zA-Z0-9-]*\.braze\.com\/[^\"\s,]+",
+            
+            # Any other braze-related domains
+            r"https:\/\/[a-zA-Z0-9-]*braze[a-zA-Z0-9-]*\.[a-zA-Z0-9.-]+\/[^\"\s,]+",
+            
+            # Appboy legacy domains (Braze was formerly Appboy)
+            r"https:\/\/[a-zA-Z0-9-]*appboy[a-zA-Z0-9-]*\.[a-zA-Z0-9.-]+\/[^\"\s,]+",
+        ]
+
+        all_matches = []
+        for pattern in patterns:
+            matches = re.findall(pattern, decoded_payload, re.IGNORECASE)
+            all_matches.extend(matches)
         
-        legacy_pattern = r"https:\/\/([a-zA-Z0-9-]+\.)?braze\.com\/[^\"\s,]+"
-        legacy_matches = re.findall(legacy_pattern, decoded_payload)
+        # Remove duplicates and filter for actual image files
+        unique_urls = list(set(all_matches))
         
-        all_matches = matches + legacy_matches
-        return list(set(all_matches))
+        # Additional filtering for image file extensions and valid URLs
+        image_extensions = ('.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.ico')
+        filtered_urls = []
+        
+        for url in unique_urls:
+            # Remove any trailing quotes or spaces
+            url = url.strip('\'"')
+            
+            # Check if it's likely an image (has image extension or no extension but comes from image CDN)
+            url_lower = url.lower()
+            is_image = (
+                any(ext in url_lower for ext in image_extensions) or
+                'image' in url_lower or
+                'icon' in url_lower or
+                'logo' in url_lower or
+                'assets/images' in url_lower or
+                url_lower.endswith('/') == False  # Could be dynamic image URL without extension
+            )
+            
+            if is_image:
+                filtered_urls.append(url)
+        
+        return filtered_urls
 
     @staticmethod
     def __download_image(url):
         try:
-            response = requests.get(url, timeout=30)
+            # Add headers to mimic a real browser request
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Accept': 'image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.9',
+            }
+            
+            response = requests.get(url, headers=headers, timeout=30)
             if response.status_code == 200:
-                file_name = url.split('/')[-1].split('?')[0] or f"image_{int(time.time())}.jpg"
+                # Try to get filename from URL
+                url_path = url.split('/')[-1].split('?')[0]
+                
+                # If no proper filename, generate one based on content type
+                if not url_path or '.' not in url_path:
+                    content_type = response.headers.get('content-type', '').lower()
+                    if 'image/jpeg' in content_type or 'image/jpg' in content_type:
+                        extension = '.jpg'
+                    elif 'image/png' in content_type:
+                        extension = '.png'
+                    elif 'image/gif' in content_type:
+                        extension = '.gif'
+                    elif 'image/webp' in content_type:
+                        extension = '.webp'
+                    elif 'image/svg' in content_type:
+                        extension = '.svg'
+                    else:
+                        extension = '.jpg'  # Default fallback
+                    
+                    file_name = f"braze_image_{int(time.time())}{extension}"
+                else:
+                    file_name = url_path
+                
+                # Ensure filename is safe
+                file_name = re.sub(r'[^\w\-_\.]', '_', file_name)
+                
                 with open(file_name, 'wb') as file:
                     file.write(response.content)
                 return file_name
-            return None
-        except Exception:
+            else:
+                print(f"Failed to download image from {url}: HTTP {response.status_code}")
+                return None
+        except Exception as e:
+            print(f"Error downloading image from {url}: {str(e)}")
             return None
 
     @staticmethod
@@ -125,26 +209,49 @@ class BrazeCdnToMoenageCdn:
             return None
 
     @staticmethod
-    def process_single_image_url(image_url, headers):
-        """Processes a single image URL. Required by the Push Migrator."""
-        if not image_url or not ("braze.com" in image_url or "braze-images.com" in image_url):
-            return image_url
+    def process_images(payload, headers):
+        if not payload or not isinstance(payload, str): 
+            return payload or ""
         
-        try:
-            file_name = BrazeCdnToMoenageCdn.__download_image(image_url)
-            if not file_name:
-                return image_url # Return original URL if download fails
-
-            moe_cdn_url = BrazeCdnToMoenageCdn.__upload_image(file_name, headers)
+        print(f"Processing images in payload...")
+        image_urls = BrazeCdnToMoenageCdn.__extract_braze_image_urls(payload)
+        
+        if not image_urls:
+            print("No Braze image URLs found in payload")
+            return payload
+        
+        print(f"Found {len(image_urls)} Braze image URLs:")
+        for i, url in enumerate(image_urls, 1):
+            print(f"  {i}. {url}")
+        
+        for url in image_urls:
+            print(f"\nProcessing image: {url}")
             
-            try:
-                os.remove(file_name)
-            except OSError:
-                pass
-            
-            return moe_cdn_url if moe_cdn_url else image_url
-        except Exception:
-            return image_url
+            # Download the image
+            file_name = BrazeCdnToMoenageCdn.__download_image(url)
+            if file_name:
+                print(f"  ✅ Downloaded as: {file_name}")
+                
+                # Upload to MoEngage
+                moe_cdn_url = BrazeCdnToMoenageCdn.__upload_image(file_name, headers)
+                if moe_cdn_url:
+                    print(f"  ✅ Uploaded to MoEngage: {moe_cdn_url}")
+                    payload = payload.replace(url, moe_cdn_url)
+                    print(f"  ✅ Replaced in payload")
+                else:
+                    print(f"  ❌ Failed to upload to MoEngage")
+                
+                # Clean up downloaded file
+                try: 
+                    os.remove(file_name)
+                    print(f"  🗑️ Cleaned up temporary file")
+                except Exception as e:
+                    print(f"  ⚠️ Failed to clean up file {file_name}: {e}")
+            else:
+                print(f"  ❌ Failed to download image")
+        
+        print(f"Image processing completed")
+        return payload
 
 class PushCampaignMigrator: #
     """
@@ -331,7 +438,7 @@ class PushCampaignMigrator: #
             final_image_url = BrazeCdnToMoenageCdn.process_single_image_url(image_url, self.cdn_headers)
             web_config["imageUrl"] = final_image_url
             web_config["widgetArray"] = [{"WidgetName": "image", "inputImageURL": final_image_url, "selectedImageUploadType": "url"}]
-        
+
         web_uri = web_action.get("web_custom_uri")
         if web_uri:
             web_config["redirectURL"] = convert_liquid_to_jinja(web_uri)       
@@ -370,12 +477,11 @@ class PushCampaignMigrator: #
             for platform in all_platforms:
                 if platform not in active_platforms:
                     del campaign_data_dict[platform]
-        
+
         return payload
 
     def create_moengage_push_payload(self, braze_campaign_data: Dict[str, Any]) -> Dict[str, Any]: #
         return self.update_payload_from_json(self.base_payload, braze_campaign_data) #
-
 
 # ==============================================================================
 # 4. API ENDPOINT
