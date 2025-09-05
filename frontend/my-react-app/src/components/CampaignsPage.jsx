@@ -522,16 +522,26 @@ function CampaignsPage() {
                     backgroundColor: selectedCampaigns.has(campaign.id) ? '#F0FDFA' : '#FFFFFF', // Light teal for selected
                     alignItems: 'center',
                     transition: 'all 0.2s ease',
-                    opacity: isCampaignMigratable(campaign) ? 1 : 0.6
+                    opacity: isCampaignMigratable(campaign) ? 1 : 0.6,
+                    cursor: isCampaignMigratable(campaign) ? 'pointer' : 'default'
+                  }}
+                  onClick={() => {
+                    if (isCampaignMigratable(campaign)) {
+                      handleCampaignSelect(campaign.id);
+                    }
                   }}
                   onMouseEnter={(e) => {
-                    if (!selectedCampaigns.has(campaign.id)) {
-                      e.target.style.backgroundColor = '#F9FAFB';
+                    if (isCampaignMigratable(campaign)) {
+                      if (!selectedCampaigns.has(campaign.id)) {
+                        e.target.style.backgroundColor = '#F9FAFB';
+                      }
                     }
                   }}
                   onMouseLeave={(e) => {
-                    if (!selectedCampaigns.has(campaign.id)) {
-                      e.target.style.backgroundColor = '#FFFFFF';
+                    if (isCampaignMigratable(campaign)) {
+                      if (!selectedCampaigns.has(campaign.id)) {
+                        e.target.style.backgroundColor = '#FFFFFF';
+                      }
                     }
                   }}
                 >
@@ -541,7 +551,11 @@ function CampaignsPage() {
                       <input
                         type="checkbox"
                         checked={selectedCampaigns.has(campaign.id)}
-                        onChange={() => handleCampaignSelect(campaign.id)}
+                        onChange={(e) => {
+                          e.stopPropagation(); // Prevent row click from also firing
+                          handleCampaignSelect(campaign.id);
+                        }}
+                        onClick={(e) => e.stopPropagation()} // Prevent row click when clicking checkbox
                         style={{
                           width: '18px',
                           height: '18px',
