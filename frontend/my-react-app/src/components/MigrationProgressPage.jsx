@@ -11,32 +11,29 @@ function MigrationProgressPage() {
   const [results, setResults] = useState({
     successful: [],
     failed: [],
-    total: 0,
-    processed: new Set() // Track processed campaign IDs to prevent duplicates
+    total: 0
   });
   const [logs, setLogs] = useState([]); // Migration logs
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const migrationStarted = useRef(false); // Prevent double execution
-  const migrationCompleted = useRef(false); // Track if migration is fully completed
 
   useEffect(() => {
-    // Prevent double execution in React StrictMode
-    if (migrationStarted.current) return;
-    
     // Load migration data from localStorage
     const data = localStorage.getItem('migrationData');
     if (!data) {
-      navigate('/campaigns');
+      console.log('No migration data found, redirecting to campaigns');
+      setError('No migration data found. Redirecting to campaigns...');
+      setTimeout(() => navigate('/campaigns'), 2000);
       return;
     }
 
     try {
       const parsedData = JSON.parse(data);
+      console.log('Migration data loaded:', parsedData);
       
       // Validate migration data structure
-      if (!parsedData.campaigns || !Array.isArray(parsedData.campaigns)) {
-        throw new Error('Invalid migration data: campaigns array is missing');
+      if (!parsedData.campaigns || !Array.isArray(parsedData.campaigns) || parsedData.campaigns.length === 0) {
+        throw new Error('Invalid migration data: no campaigns found');
       }
       
       if (!parsedData.brazeCredentials) {
@@ -47,37 +44,44 @@ function MigrationProgressPage() {
         throw new Error('Invalid migration data: MoEngage credentials are missing');
       }
 
-      // Check if this specific migration batch was already completed
-      const migrationKey = `migration_completed_${Date.now()}_${parsedData.campaigns.map(c => c.id).sort().join('_')}`;
-      const migrationAlreadyCompleted = localStorage.getItem(migrationKey);
-      
-      if (migrationAlreadyCompleted) {
-        console.log('This exact migration batch was already completed, preventing duplicate execution');
-        addLog('⚠️ This migration batch was already completed. Redirecting back to campaigns.', 'warning');
-        setTimeout(() => navigate('/campaigns'), 3000);
-        return;
-      }
-      
       setMigrationData(parsedData);
       setResults(prev => ({ ...prev, total: parsedData.campaigns.length }));
+      addLog(`🚀 Migration data loaded successfully`, 'success');
+      addLog(`📊 Found ${parsedData.campaigns.length} campaign(s) to migrate`, 'info');
       
-      // Mark migration as started to prevent double execution
-      migrationStarted.current = true;
+      // Check if migration was already completed
+      const migrationStatus = localStorage.getItem('migrationStatus');
+      const currentMigrationId = JSON.stringify(parsedData.campaigns.map(c => c.id).sort());
       
-      // Start migration process
+      if (migrationStatus) {
+        try {
+          const status = JSON.parse(migrationStatus);
+          if (status.completed && status.migrationId === currentMigrationId) {
+            addLog(`✅ Migration already completed for these campaigns`, 'info');
+            addLog(`🔄 Redirecting back to campaigns...`, 'info');
+            setTimeout(() => navigate('/campaigns'), 2000);
+            return;
+          }
+        } catch (e) {
+          // Invalid stored status, continue with migration
+          localStorage.removeItem('migrationStatus');
+        }
+      }
+      
+      // Start migration process after a short delay
       setTimeout(() => {
-        startMigration(parsedData, migrationKey);
+        startMigration(parsedData);
       }, 2000);
+      
     } catch (err) {
-      setError(`Migration data error: ${err.message}`);
+      const errorMessage = `Migration data error: ${err.message}`;
+      setError(errorMessage);
+      addLog(`❌ ${errorMessage}`, 'error');
       console.error('Migration data error:', err);
+      
+      // Redirect back to campaigns after error
+      setTimeout(() => navigate('/campaigns'), 3000);
     }
-    
-    // Cleanup function - but don't reset completion status
-    return () => {
-      migrationStarted.current = false;
-      // Don't reset migrationCompleted to prevent duplicates
-    };
   }, [navigate]);
 
   const addLog = (message, type = 'info') => {
@@ -90,31 +94,9 @@ function MigrationProgressPage() {
     }]);
   };
 
-  const startMigration = async (data, migrationKey) => {
-    // Multiple safety checks to prevent double execution
-    if (migrationStarted.current || migrationCompleted.current) {
-      console.log('Migration already started or completed, preventing duplicate execution');
-      addLog('⚠️ Migration already in progress or completed, skipping duplicate execution', 'warning');
-      return;
-    }
-    
-    if (currentPhase === 'migrating' || currentPhase === 'completed') {
-      console.log('Migration already in progress or completed based on phase, skipping...');
-      addLog('⚠️ Migration phase indicates already in progress, skipping', 'warning');
-      return;
-    }
-    
-    // Check persistent storage for completion status
-    if (localStorage.getItem(migrationKey)) {
-      console.log('Migration already completed according to persistent storage');
-      addLog('⚠️ Migration already completed (persistent check), preventing duplicate execution', 'warning');
-      return;
-    }
-    
-    // Mark migration as started immediately
-    migrationStarted.current = true;
+  const startMigration = async (data) => {
+    console.log('🚀 Starting migration process...');
     setCurrentPhase('migrating');
-    
     addLog('🚀 Starting migration process...', 'info');
     addLog(`📊 Found ${data.campaigns.length} campaign(s) to migrate`, 'info');
     
@@ -127,113 +109,120 @@ function MigrationProgressPage() {
       moEngageKeys: data.moEngageCredentials ? Object.keys(data.moEngageCredentials) : []
     });
     
-    // Group campaigns by type (email, push, sms)
-    const emailCampaigns = data.campaigns.filter(c => c.type === 'email');
-    const pushCampaigns = data.campaigns.filter(c => c.type === 'push' || c.type === 'multi');
-    const smsCampaigns = data.campaigns.filter(c => c.type === 'sms');
+    // Filter and group campaigns by type
+    const migratableCampaigns = data.campaigns.filter(c => 
+      c.type === 'email' || c.type === 'push' || c.type === 'multi' || c.type === 'sms'
+    );
+    
+    if (migratableCampaigns.length === 0) {
+      addLog('❌ No migratable campaigns found', 'error');
+      setError('No migratable campaigns found. Only Email, Push, and SMS campaigns can be migrated.');
+      setCurrentPhase('completed');
+      return;
+    }
+    
+    const emailCampaigns = migratableCampaigns.filter(c => c.type === 'email');
+    const pushCampaigns = migratableCampaigns.filter(c => c.type === 'push' || c.type === 'multi');
+    const smsCampaigns = migratableCampaigns.filter(c => c.type === 'sms');
     
     addLog(`📧 Email campaigns: ${emailCampaigns.length}`, 'info');
     addLog(`📱 Push campaigns: ${pushCampaigns.length}`, 'info');
     addLog(`💬 SMS campaigns: ${smsCampaigns.length}`, 'info');
     
-    const allCampaigns = [...emailCampaigns, ...pushCampaigns, ...smsCampaigns];
-    
-    // Additional deduplication check based on ID, name, and type
-    const uniqueCampaigns = [];
-    const seenCampaigns = new Set();
-    
-    for (const campaign of allCampaigns) {
-      const campaignKey = `${campaign.id}-${campaign.name}-${campaign.type}`;
-      if (!seenCampaigns.has(campaignKey)) {
-        seenCampaigns.add(campaignKey);
-        uniqueCampaigns.push(campaign);
-      } else {
-        addLog(`⚠️ Duplicate campaign detected and removed: ${campaign.name}`, 'warning');
-      }
-    }
-    
-    addLog(`🔍 After deduplication: ${uniqueCampaigns.length} unique campaigns`, 'info');
-    
-    for (let i = 0; i < uniqueCampaigns.length; i++) {
-      const campaign = uniqueCampaigns[i];
-      
-      // Check if this campaign has already been processed
-      if (results.processed.has(campaign.id)) {
-        addLog(`⚠️ Skipping ${campaign.name} - already processed`, 'warning');
-        continue;
-      }
+    // Process campaigns one by one with detailed progress
+    for (let i = 0; i < migratableCampaigns.length; i++) {
+      const campaign = migratableCampaigns[i];
       
       setCurrentCampaign(campaign);
-      setCurrentStep(`Processing campaign ${i + 1} of ${uniqueCampaigns.length}`);
-      setProgress(Math.round(((i + 1) / uniqueCampaigns.length) * 100));
+      setCurrentStep(`Processing campaign ${i + 1} of ${migratableCampaigns.length}`);
       
-      addLog(`\n� Processing: ${campaign.name} (${campaign.type.toUpperCase()})`, 'info');
+      // Calculate progressive steps for better UX
+      const baseProgress = Math.round((i / migratableCampaigns.length) * 100);
+      const stepIncrement = Math.round(100 / migratableCampaigns.length / 4); // 4 steps per campaign
+      
+      // Step 0: Start processing
+      setProgress(baseProgress);
+      addLog(`\n📋 Processing: ${campaign.name} (${campaign.type.toUpperCase()})`, 'info');
+      await new Promise(resolve => setTimeout(resolve, 500)); // Small delay to show step
       
       try {
         // Step 1: Fetch detailed campaign data from Campaign Fetcher API
         setCurrentStep('Fetching campaign details...');
+        setProgress(baseProgress + stepIncrement);
         addLog(`📡 Fetching campaign details from Braze...`, 'info');
         const campaignDetails = await fetchCampaignDetails(campaign.id, data.brazeCredentials);
         addLog(`✅ Campaign details fetched successfully`, 'success');
         
-        // Step 2: Migrate campaign using appropriate service
+        // Step 2: Prepare migration data
+        setCurrentStep('Preparing migration data...');
+        setProgress(baseProgress + (stepIncrement * 2));
+        await new Promise(resolve => setTimeout(resolve, 800)); // Show preparation step
+        addLog(`📝 Preparing migration payload...`, 'info');
+        
+        // Step 3: Migrate campaign using appropriate service
         setCurrentStep('Creating draft in MoEngage...');
+        setProgress(baseProgress + (stepIncrement * 3));
         addLog(`🔄 Sending to ${campaign.type} migration service...`, 'info');
         const migrationResult = await migrateCampaign(campaignDetails, campaign.type, data.moEngageCredentials);
         addLog(`✅ Draft created successfully in MoEngage`, 'success');
         
-        // Mark campaign as processed and add to successful results
+        // Step 4: Complete campaign processing
+        setCurrentStep('Finalizing migration...');
+        setProgress(Math.round(((i + 1) / migratableCampaigns.length) * 100));
+        
+        // Add to successful results
         setResults(prev => ({
           ...prev,
           successful: [...prev.successful, { 
             ...campaign, 
             migratedAt: new Date().toISOString(),
             moEngageResponse: migrationResult
-          }],
-          processed: new Set([...prev.processed, campaign.id])
+          }]
         }));
         
         addLog(`🎉 Migration completed for: ${campaign.name}`, 'success');
         
         // Wait between migrations to show progress
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
       } catch (err) {
         addLog(`❌ Migration failed for ${campaign.name}: ${err.message}`, 'error');
         console.error(`❌ Failed to migrate campaign ${campaign.name}:`, err);
         
-        // Mark campaign as processed (even if failed) and add to failed results
+        // Complete progress for failed campaign too
+        setProgress(Math.round(((i + 1) / migratableCampaigns.length) * 100));
+        
+        // Add to failed results
         setResults(prev => ({
           ...prev,
           failed: [...prev.failed, { 
             ...campaign, 
             error: err.message,
             failedAt: new Date().toISOString()
-          }],
-          processed: new Set([...prev.processed, campaign.id])
+          }]
         }));
+        
+        // Continue with next campaign
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
     
-    // Mark migration as fully completed
-    migrationCompleted.current = true;
-    
-    // Store completion status persistently to prevent future duplicates
-    localStorage.setItem(migrationKey, JSON.stringify({
-      completed: true,
-      completedAt: new Date().toISOString(),
-      campaignIds: data.campaigns.map(c => c.id),
-      successful: results.successful.length,
-      failed: results.failed.length
-    }));
-    
+    // Mark migration as completed
     setCurrentPhase('completed');
     setCurrentCampaign(null);
     setCurrentStep('');
     addLog(`\n🏁 Migration process completed!`, 'success');
-    addLog(`✅ Successful: ${results.successful.length}`, 'success');
-    addLog(`❌ Failed: ${results.failed.length}`, results.failed.length > 0 ? 'error' : 'info');
-    addLog(`🔒 Migration marked as completed to prevent duplicates`, 'info');
+    
+    // Store completion status to prevent re-migration
+    const migrationId = JSON.stringify(data.campaigns.map(c => c.id).sort());
+    localStorage.setItem('migrationStatus', JSON.stringify({
+      completed: true,
+      completedAt: new Date().toISOString(),
+      migrationId: migrationId,
+      totalCampaigns: data.campaigns.length
+    }));
+    
+    addLog(`🔒 Migration marked as completed`, 'info');
   };
 
   const fetchCampaignDetails = async (campaignId, brazeCredentials) => {
@@ -374,12 +363,6 @@ function MigrationProgressPage() {
   const handleRetryFailed = async () => {
     if (results.failed.length === 0) return;
     
-    // Prevent retry if migration is completed
-    if (migrationCompleted.current && currentPhase === 'completed') {
-      addLog(`⚠️ Cannot retry - migration is already completed`, 'warning');
-      return;
-    }
-    
     addLog(`\n🔄 Retrying ${results.failed.length} failed migration(s)...`, 'info');
     setCurrentPhase('migrating');
     
@@ -387,17 +370,11 @@ function MigrationProgressPage() {
     const retrySuccessful = [];
     const retryFailed = [];
     
-    // Reset failed list temporarily but keep processed tracking
+    // Reset failed list temporarily
     setResults(prev => ({ ...prev, failed: [] }));
     
     for (let i = 0; i < failedCampaigns.length; i++) {
       const campaign = failedCampaigns[i];
-      
-      // Double check - don't retry if somehow already processed successfully
-      if (results.processed.has(campaign.id)) {
-        addLog(`⚠️ Skipping retry for ${campaign.name} - already processed successfully`, 'warning');
-        continue;
-      }
       
       setCurrentCampaign(campaign);
       setCurrentStep(`Retrying campaign ${i + 1} of ${failedCampaigns.length}`);
@@ -421,7 +398,7 @@ function MigrationProgressPage() {
         
         addLog(`✅ Retry successful for: ${campaign.name}`, 'success');
         
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise(resolve => setTimeout(resolve, 1500));
         
       } catch (err) {
         addLog(`❌ Retry failed for ${campaign.name}: ${err.message}`, 'error');
@@ -433,12 +410,11 @@ function MigrationProgressPage() {
       }
     }
     
-    // Update results with processed tracking
+    // Update results
     setResults(prev => ({
       ...prev,
       successful: [...prev.successful, ...retrySuccessful],
-      failed: retryFailed,
-      processed: new Set([...prev.processed, ...retrySuccessful.map(c => c.id)])
+      failed: retryFailed
     }));
     
     setCurrentPhase('completed');
@@ -451,15 +427,9 @@ function MigrationProgressPage() {
   };
 
   const handleBackToCampaigns = () => {
-    // Clean up migration data and reset ALL state
+    // Clean up migration data and status
     localStorage.removeItem('migrationData');
-    
-    // Note: We keep the persistent migration completion markers in localStorage
-    // These are keyed by campaign IDs and prevent duplicate migrations
-    // Only remove the current batch data, not the completion markers
-    
-    migrationStarted.current = false;
-    migrationCompleted.current = false;
+    localStorage.removeItem('migrationStatus');
     navigate('/campaigns');
   };
 

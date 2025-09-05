@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -12,8 +12,27 @@ function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [hasStoredCredentials, setHasStoredCredentials] = useState(false);
 
   const navigate = useNavigate();
+
+  // Effect to load stored credentials on component mount
+  useEffect(() => {
+    const storedCredentials = localStorage.getItem('brazeCredentials');
+    if (storedCredentials) {
+      try {
+        const credentials = JSON.parse(storedCredentials);
+        setDashboardUrl(credentials.dashboard_url || 'https://dashboard-09.braze.com');
+        setSessionId(credentials.session_id || '');
+        setAppGroupId(credentials.app_group_id || '');
+        setHasStoredCredentials(true);
+      } catch (err) {
+        console.error('Error parsing stored credentials:', err);
+        // Clear invalid stored credentials
+        localStorage.removeItem('brazeCredentials');
+      }
+    }
+  }, []);
 
   // Function to handle form submission
   const handleLogin = async (e) => {
@@ -88,7 +107,7 @@ function LoginPage() {
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text'
           }}>
-            🚀 Campaign Migration Tool
+            🚀 Migration Tool Kit
           </h1>
           
           <p style={{
@@ -196,8 +215,24 @@ function LoginPage() {
             marginBottom: '25px',
             fontSize: '14px'
           }}>
-            Enter your Braze dashboard credentials to get started
+            {hasStoredCredentials 
+              ? "✅ Credentials found! Click 'Start Migration' to continue or update fields below"
+              : "Enter your Braze dashboard credentials to get started"
+            }
           </p>
+
+          {hasStoredCredentials && (
+            <div style={{
+              backgroundColor: '#d1ecf1',
+              color: '#0c5460',
+              padding: '12px',
+              borderRadius: '6px',
+              marginBottom: '20px',
+              border: '1px solid #bee5eb'
+            }}>
+              💾 Using stored credentials. You can update them below if needed.
+            </div>
+          )}
 
           {success && (
             <div style={{
@@ -319,7 +354,7 @@ function LoginPage() {
               style={{
                 width: '100%',
                 padding: '14px',
-                backgroundColor: loading ? '#555' : '#007bff',
+                backgroundColor: loading ? '#555' : (hasStoredCredentials ? '#28a745' : '#007bff'),
                 color: '#ffffff',
                 border: 'none',
                 borderRadius: '8px',
@@ -343,9 +378,47 @@ function LoginPage() {
                   Authenticating...
                 </span>
               ) : (
-                '🚀 Start Migration'
+                hasStoredCredentials ? '🚀 Start Migration' : '🚀 Save & Start Migration'
               )}
             </button>
+
+            {hasStoredCredentials && (
+              <button
+                type="button"
+                onClick={() => {
+                  localStorage.removeItem('brazeCredentials');
+                  setDashboardUrl('https://dashboard-09.braze.com');
+                  setSessionId('');
+                  setAppGroupId('');
+                  setHasStoredCredentials(false);
+                  setError('');
+                  setSuccess(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  backgroundColor: 'transparent',
+                  color: '#dc3545',
+                  border: '1px solid #dc3545',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  marginTop: '10px',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#dc3545';
+                  e.target.style.color = '#ffffff';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'transparent';
+                  e.target.style.color = '#dc3545';
+                }}
+              >
+                🗑️ Clear Stored Credentials
+              </button>
+            )}
           </form>
 
           <div style={{

@@ -20,7 +20,7 @@ function ViewDetailsPage() {
 
   useEffect(() => {
     const fetchCampaignDetails = async () => {
-      const brazeCredentials = localStorage.getItem('braze_credentials');
+      const brazeCredentials = localStorage.getItem('brazeCredentials');
 
       if (!brazeCredentials) {
         setError('No active session found. Please log in.');
@@ -52,7 +52,7 @@ function ViewDetailsPage() {
         if (err.response) {
           if (err.response.status === 401) {
             errorMessage = 'Authentication expired. Please log in again.';
-            localStorage.removeItem('braze_credentials');
+            localStorage.removeItem('brazeCredentials');
             setTimeout(() => navigate('/'), 1000);
           } else if (err.response.status === 404) {
             errorMessage = 'Campaign not found.';

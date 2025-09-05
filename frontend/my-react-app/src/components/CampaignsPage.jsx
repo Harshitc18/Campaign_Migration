@@ -21,7 +21,7 @@ function CampaignsPage() {
   useEffect(() => {
     const fetchCampaigns = async () => {
       // Retrieve the stored Braze credentials from localStorage
-      const brazeCredentials = localStorage.getItem('braze_credentials');
+      const brazeCredentials = localStorage.getItem('brazeCredentials');
 
       // If no credentials are found, redirect to the login page
       if (!brazeCredentials) {
@@ -67,7 +67,7 @@ function CampaignsPage() {
         if (err.response) {
           if (err.response.status === 401) {
             errorMessage = 'Authentication expired. Please log in again.';
-            localStorage.removeItem('braze_credentials');
+            localStorage.removeItem('brazeCredentials');
             setTimeout(() => navigate('/'), 1000);
           } else if (err.response.data && err.response.data.detail) {
             errorMessage = err.response.data.detail;
@@ -152,8 +152,8 @@ function CampaignsPage() {
 
   const handleMoEngageAuth = async (moEngageCredentials, campaignIds) => {
     try {
-      // Get Braze credentials from localStorage
-      const brazeCredentials = localStorage.getItem('braze_credentials');
+      // Get Braze credentials from localStorage (fix the key name)
+      const brazeCredentials = localStorage.getItem('brazeCredentials');
       const parsedBrazeCredentials = brazeCredentials ? JSON.parse(brazeCredentials) : null;
       
       // Navigate to migration progress page
