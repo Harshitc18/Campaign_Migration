@@ -14,7 +14,7 @@ function CampaignsPage() {
   const [filterType, setFilterType] = useState('all');
   const [selectedCampaigns, setSelectedCampaigns] = useState(new Set());
   const [showMoEngageAuth, setShowMoEngageAuth] = useState(false);
-  const campaignsPerPage = 6;
+  const campaignsPerPage = 15; // Increased for list view
   const navigate = useNavigate();
 
   // useEffect hook to fetch data when the component mounts
@@ -187,7 +187,7 @@ function CampaignsPage() {
         alignItems: 'center',
         height: '50vh',
         fontSize: '18px',
-        color: '#666'
+        color: '#6B7280' // --color-text-secondary
       }}>
         <div style={{
           display: 'flex',
@@ -197,8 +197,8 @@ function CampaignsPage() {
           <div style={{
             width: '20px',
             height: '20px',
-            border: '3px solid #f3f3f3',
-            borderTop: '3px solid #007bff',
+            border: '3px solid #E5E7EB',
+            borderTop: '3px solid #00AFB9', // Vibrant Teal
             borderRadius: '50%',
             animation: 'spin 1s linear infinite'
           }}></div>
@@ -221,9 +221,9 @@ function CampaignsPage() {
       }}>
         <div style={{
           padding: '20px 40px',
-          backgroundColor: '#f8d7da',
-          color: '#721c24',
-          border: '1px solid #f5c6cb',
+          backgroundColor: '#FEE4E2', // Danger Red BG
+          color: '#D92D20', // Danger Red text
+          border: '1px solid #E5E7EB',
           borderRadius: '8px',
           fontSize: '16px',
           maxWidth: '500px',
@@ -234,8 +234,8 @@ function CampaignsPage() {
         <button
           onClick={() => window.location.reload()}
           style={{
-            backgroundColor: '#007bff',
-            color: 'white',
+            backgroundColor: '#00AFB9', // Vibrant Teal
+            color: '#FFFFFF',
             border: 'none',
             padding: '10px 20px',
             borderRadius: '6px',
@@ -253,9 +253,9 @@ function CampaignsPage() {
   return (
     <div style={{ 
       minHeight: '100vh',
-      backgroundColor: '#121212',
+      backgroundColor: '#F9FAFB', // --color-bg-primary
       padding: '0',
-      color: '#ffffff'
+      color: '#111827' // --color-text-primary
     }}>
       {/* Add CSS keyframes for loading animation */}
       <style>
@@ -265,22 +265,13 @@ function CampaignsPage() {
             100% { transform: rotate(360deg); }
           }
           
-          .campaign-card {
-            transition: all 0.3s ease;
-          }
-          
-          .campaign-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4) !important;
-          }
-          
           .btn-primary {
             transition: all 0.2s ease;
           }
           
           .btn-primary:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0,123,255,0.4);
+            box-shadow: 0 4px 12px rgba(0,175,185,0.3);
           }
           
           .btn-success {
@@ -289,154 +280,42 @@ function CampaignsPage() {
           
           .btn-success:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(40,167,69,0.4);
+            box-shadow: 0 4px 12px rgba(0,135,103,0.3);
           }
         `}
       </style>
 
       {/* Header Section */}
       <div style={{
-        background: 'linear-gradient(135deg, #2d3748 0%, #4a5568 100%)',
-        color: 'white',
+        background: 'linear-gradient(135deg, #1D244F 0%, #00AFB9 100%)', // Deep Navy to Vibrant Teal
+        color: '#FFFFFF',
         padding: '40px 20px',
         textAlign: 'center',
-        boxShadow: '0 4px 6px rgba(0,0,0,0.3)'
+        boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
       }}>
         <h1 style={{
           margin: '0 0 10px 0',
           fontSize: '42px',
           fontWeight: '700',
-          textShadow: '0 2px 4px rgba(0,0,0,0.5)'
+          textShadow: '0 2px 4px rgba(0,0,0,0.3)'
         }}>
           🚀 Braze Campaigns
         </h1>
         <p style={{
-          margin: '0 0 20px 0',
+          margin: '0',
           fontSize: '18px',
           opacity: '0.9'
         }}>
           Manage and migrate your campaigns with ease
         </p>
-        
-        {/* Navigation Buttons - Testing Tools */}
-        <div style={{ 
-          marginBottom: '20px',
-          padding: '20px',
-          backgroundColor: '#2a2a2a',
-          borderRadius: '8px',
-          border: '1px solid #404040'
-        }}>
-          <h3 style={{ 
-            color: '#ffffff', 
-            margin: '0 0 15px 0',
-            fontSize: '18px',
-            textAlign: 'center'
-          }}>
-            🧪 Testing Tools
-          </h3>
-          <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button
-              onClick={() => navigate('/draft-migrator')}
-              style={{
-                backgroundColor: '#667eea',
-                color: 'white',
-                border: 'none',
-                padding: '12px 24px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '16px',
-                fontWeight: '600',
-                boxShadow: '0 4px 8px rgba(102, 126, 234, 0.3)',
-                transition: 'all 0.3s ease',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.backgroundColor = '#5a67d8';
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = '0 6px 12px rgba(102, 126, 234, 0.4)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.backgroundColor = '#667eea';
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = '0 4px 8px rgba(102, 126, 234, 0.3)';
-              }}
-            >
-              🚀 Draft Migrator
-            </button>
-
-            <button
-              onClick={() => navigate('/push-migrator')}
-              style={{
-                backgroundColor: '#FF6B35',
-                color: 'white',
-                border: 'none',
-                padding: '12px 24px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '16px',
-                fontWeight: '600',
-                boxShadow: '0 4px 8px rgba(255, 107, 53, 0.3)',
-                transition: 'all 0.3s ease',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.backgroundColor = '#E55A2B';
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = '0 6px 12px rgba(255, 107, 53, 0.4)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.backgroundColor = '#FF6B35';
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = '0 4px 8px rgba(255, 107, 53, 0.3)';
-              }}
-            >
-              📱 Push Migrator
-            </button>
-
-            <button
-              onClick={() => navigate('/sms-migrator')}
-              style={{
-                backgroundColor: '#17a2b8',
-                color: 'white',
-                border: 'none',
-                padding: '12px 24px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '16px',
-                fontWeight: '600',
-                boxShadow: '0 4px 8px rgba(23, 162, 184, 0.3)',
-                transition: 'all 0.3s ease',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.backgroundColor = '#138496';
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = '0 6px 12px rgba(23, 162, 184, 0.4)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.backgroundColor = '#17a2b8';
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = '0 4px 8px rgba(23, 162, 184, 0.3)';
-              }}
-            >
-              💬 SMS Migrator
-            </button>
-          </div>
-        </div>
       </div>
 
       {/* Controls Section */}
       <div style={{
-        backgroundColor: '#1e1e1e',
+        backgroundColor: '#FFFFFF', // --color-bg-secondary
         padding: '30px 20px',
-        borderBottom: '1px solid #333',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+        borderBottom: '1px solid #E5E7EB', // --color-border-subtle
+        boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
       }}>
         <div style={{
           maxWidth: '1200px',
@@ -457,16 +336,16 @@ function CampaignsPage() {
               style={{
                 width: '100%',
                 padding: '12px 16px',
-                border: '2px solid #404040',
+                border: '2px solid #E5E7EB', // --color-border-subtle
                 borderRadius: '8px',
                 fontSize: '16px',
                 transition: 'border-color 0.2s ease',
                 outline: 'none',
-                backgroundColor: '#2a2a2a',
-                color: '#ffffff'
+                backgroundColor: '#FFFFFF', // --color-bg-secondary
+                color: '#111827' // --color-text-primary
               }}
-              onFocus={(e) => e.target.style.borderColor = '#007bff'}
-              onBlur={(e) => e.target.style.borderColor = '#404040'}
+              onFocus={(e) => e.target.style.borderColor = '#00AFB9'} // Vibrant Teal focus
+              onBlur={(e) => e.target.style.borderColor = '#E5E7EB'}
             />
           </div>
 
@@ -478,11 +357,11 @@ function CampaignsPage() {
               style={{
                 width: '100%',
                 padding: '12px 16px',
-                border: '2px solid #404040',
+                border: '2px solid #E5E7EB', // --color-border-subtle
                 borderRadius: '8px',
                 fontSize: '16px',
-                backgroundColor: '#2a2a2a',
-                color: '#ffffff',
+                backgroundColor: '#FFFFFF', // --color-bg-secondary
+                color: '#111827', // --color-text-primary
                 cursor: 'pointer',
                 outline: 'none'
               }}
@@ -501,14 +380,14 @@ function CampaignsPage() {
             display: 'flex',
             alignItems: 'center',
             gap: '20px',
-            color: '#b3b3b3',
+            color: '#6B7280', // --color-text-secondary
             fontSize: '14px'
           }}>
             <span>
-              <strong style={{ color: '#ffffff' }}>{filteredCampaigns.length}</strong> campaign{filteredCampaigns.length !== 1 ? 's' : ''}
+              <strong style={{ color: '#111827' }}>{filteredCampaigns.length}</strong> campaign{filteredCampaigns.length !== 1 ? 's' : ''}
             </span>
             {filteredCampaigns.length !== campaigns.length && (
-              <span style={{ color: '#007bff' }}>
+              <span style={{ color: '#00AFB9' }}> {/* Vibrant Teal */}
                 (filtered from {campaigns.length})
               </span>
             )}
@@ -526,8 +405,8 @@ function CampaignsPage() {
           <>
             {/* Bulk Selection Controls */}
             <div style={{
-              backgroundColor: '#1e1e1e',
-              border: '1px solid #404040',
+              backgroundColor: '#FFFFFF', // --color-bg-secondary
+              border: '1px solid #E5E7EB', // --color-border-subtle
               borderRadius: '8px',
               padding: '20px',
               marginBottom: '30px',
@@ -538,15 +417,15 @@ function CampaignsPage() {
               gap: '15px'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap' }}>
-                <div style={{ color: '#ffffff', fontSize: '16px', fontWeight: '600' }}>
+                <div style={{ color: '#1D244F', fontSize: '16px', fontWeight: '600' }}> {/* Deep Navy */}
                   📋 Bulk Migration
                 </div>
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <button
                     onClick={handleSelectAll}
                     style={{
-                      backgroundColor: '#404040',
-                      color: '#ffffff',
+                      backgroundColor: '#F3F4F6', // Light gray
+                      color: '#1D244F', // Deep Navy
                       border: 'none',
                       padding: '8px 16px',
                       borderRadius: '6px',
@@ -559,8 +438,8 @@ function CampaignsPage() {
                   <button
                     onClick={handleClearSelection}
                     style={{
-                      backgroundColor: '#6c757d',
-                      color: '#ffffff',
+                      backgroundColor: '#6B7280', // --color-text-secondary
+                      color: '#FFFFFF',
                       border: 'none',
                       padding: '8px 16px',
                       borderRadius: '6px',
@@ -574,9 +453,9 @@ function CampaignsPage() {
               </div>
               
               <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                <div style={{ color: '#b3b3b3', fontSize: '14px' }}>
+                <div style={{ color: '#6B7280', fontSize: '14px' }}> {/* --color-text-secondary */}
                   {selectedCampaigns.size} selected
-                  <span style={{ color: '#888', marginLeft: '8px' }}>
+                  <span style={{ color: '#9CA3AF', marginLeft: '8px' }}>
                     (Only Email, Push & SMS campaigns can be migrated)
                   </span>
                 </div>
@@ -584,8 +463,8 @@ function CampaignsPage() {
                   <button
                     onClick={handleBulkMigrate}
                     style={{
-                      backgroundColor: '#28a745',
-                      color: '#ffffff',
+                      backgroundColor: '#008767', // Success Green
+                      color: '#FFFFFF',
                       border: 'none',
                       padding: '10px 20px',
                       borderRadius: '6px',
@@ -600,212 +479,199 @@ function CampaignsPage() {
               </div>
             </div>
 
-            {/* Campaigns Grid */}
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', 
-              gap: '24px',
+            {/* Campaigns List */}
+            <div style={{
+              backgroundColor: '#FFFFFF', // --color-bg-secondary
+              borderRadius: '12px',
+              border: '1px solid #E5E7EB', // --color-border-subtle
+              overflow: 'hidden',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
               marginBottom: '40px'
             }}>
-              {currentCampaigns.map((campaign) => (
+              {/* Table Header */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '50px 1fr 120px 100px 150px 200px',
+                gap: '16px',
+                padding: '16px 20px',
+                backgroundColor: '#F9FAFB', // --color-bg-primary
+                borderBottom: '1px solid #E5E7EB',
+                fontWeight: '600',
+                fontSize: '14px',
+                color: '#6B7280', // --color-text-secondary
+                alignItems: 'center'
+              }}>
+                <div>SELECT</div>
+                <div>CAMPAIGN NAME</div>
+                <div>TYPE</div>
+                <div>STATUS</div>
+                <div>LAST EDITED</div>
+                <div style={{ textAlign: 'center' }}>ACTIONS</div>
+              </div>
+
+              {/* Campaign Rows */}
+              {currentCampaigns.map((campaign, index) => (
                 <div 
-                  key={campaign.id} 
-                  className="campaign-card"
+                  key={campaign.id}
                   style={{
-                    background: '#1e1e1e',
-                    border: `1px solid ${selectedCampaigns.has(campaign.id) ? '#28a745' : '#333'}`,
-                    borderRadius: '12px',
-                    padding: '24px',
-                    boxShadow: selectedCampaigns.has(campaign.id) 
-                      ? '0 2px 8px rgba(40, 167, 69, 0.3)' 
-                      : '0 2px 8px rgba(0,0,0,0.3)',
-                    cursor: 'pointer',
-                    position: 'relative',
-                    overflow: 'hidden',
+                    display: 'grid',
+                    gridTemplateColumns: '50px 1fr 120px 100px 150px 200px',
+                    gap: '16px',
+                    padding: '16px 20px',
+                    borderBottom: index < currentCampaigns.length - 1 ? '1px solid #E5E7EB' : 'none',
+                    backgroundColor: selectedCampaigns.has(campaign.id) ? '#F0FDFA' : '#FFFFFF', // Light teal for selected
+                    alignItems: 'center',
+                    transition: 'all 0.2s ease',
                     opacity: isCampaignMigratable(campaign) ? 1 : 0.6
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!selectedCampaigns.has(campaign.id)) {
+                      e.target.style.backgroundColor = '#F9FAFB';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!selectedCampaigns.has(campaign.id)) {
+                      e.target.style.backgroundColor = '#FFFFFF';
+                    }
                   }}
                 >
                   {/* Selection Checkbox */}
-                  {isCampaignMigratable(campaign) && (
-                    <div style={{
-                      position: 'absolute',
-                      top: '12px',
-                      left: '12px',
-                      zIndex: 10
-                    }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {isCampaignMigratable(campaign) ? (
                       <input
                         type="checkbox"
                         checked={selectedCampaigns.has(campaign.id)}
                         onChange={() => handleCampaignSelect(campaign.id)}
-                        onClick={(e) => e.stopPropagation()}
                         style={{
                           width: '18px',
                           height: '18px',
                           cursor: 'pointer',
-                          accentColor: '#28a745'
+                          accentColor: '#008767' // Success Green
                         }}
                       />
-                    </div>
-                  )}
-
-                  {/* Not Migratable Badge */}
-                  {!isCampaignMigratable(campaign) && (
-                    <div style={{
-                      position: 'absolute',
-                      top: '12px',
-                      left: '12px',
-                      backgroundColor: '#6c757d',
-                      color: 'white',
-                      padding: '4px 8px',
-                      fontSize: '11px',
-                      fontWeight: 'bold',
-                      borderRadius: '4px',
-                      zIndex: 10
-                    }}>
-                      NOT MIGRATABLE
-                    </div>
-                  )}
-                  {/* Campaign Type Badge */}
-                  <div style={{
-                    position: 'absolute',
-                    top: '0',
-                    right: '0',
-                    backgroundColor: campaign.type === 'multi' ? '#28a745' : 
-                                   campaign.type === 'email' ? '#007bff' : 
-                                   campaign.type === 'sms' ? '#17a2b8' :
-                                   campaign.type === 'banner' ? '#fd7e14' : 
-                                   campaign.type === 'webhook' ? '#6f42c1' : '#6c757d',
-                    color: 'white',
-                    padding: '6px 12px',
-                    fontSize: '12px',
-                    fontWeight: 'bold',
-                    textTransform: 'uppercase',
-                    borderBottomLeftRadius: '8px'
-                  }}>
-                    {campaign.type === 'multi' ? 'PUSH' : campaign.type}
+                    ) : (
+                      <span style={{
+                        fontSize: '12px',
+                        color: '#6B7280',
+                        fontWeight: '600',
+                        padding: '2px 6px',
+                        backgroundColor: '#F3F4F6',
+                        borderRadius: '4px'
+                      }}>
+                        N/A
+                      </span>
+                    )}
                   </div>
 
-                  {/* Campaign Header */}
-                  <div style={{ marginBottom: '20px', paddingRight: '80px' }}>
-                    <h3 style={{ 
-                      margin: '0 0 8px 0', 
-                      color: '#ffffff',
-                      fontSize: '20px',
+                  {/* Campaign Name */}
+                  <div>
+                    <div style={{
+                      color: '#1D244F', // Deep Navy
+                      fontSize: '16px',
                       fontWeight: '600',
-                      lineHeight: '1.3'
+                      marginBottom: '4px',
+                      lineHeight: '1.2'
                     }}>
                       {campaign.name}
-                    </h3>
-                  </div>
-                  
-                  {/* Campaign Details */}
-                  <div style={{ marginBottom: '20px' }}>
-                    <div style={{ 
-                      display: 'grid',
-                      gridTemplateColumns: '1fr 1fr',
-                      gap: '12px',
-                      fontSize: '14px'
+                    </div>
+                    <div style={{
+                      fontFamily: 'Monaco, Consolas, monospace',
+                      fontSize: '12px',
+                      color: '#6B7280', // --color-text-secondary
+                      backgroundColor: '#F3F4F6',
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                      display: 'inline-block',
+                      maxWidth: '150px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
                     }}>
-                      <div>
-                        <span style={{ 
-                          display: 'block',
-                          fontWeight: '600', 
-                          color: '#b3b3b3',
-                          marginBottom: '4px'
-                        }}>
-                          Campaign ID
-                        </span>
-                        <span style={{ 
-                          fontFamily: 'Monaco, Consolas, monospace', 
-                          backgroundColor: '#2a2a2a',
-                          padding: '4px 8px',
-                          borderRadius: '4px',
-                          fontSize: '12px',
-                          color: '#ffffff',
-                          display: 'block',
-                          wordBreak: 'break-all'
-                        }}>
-                          {campaign.id}
-                        </span>
-                      </div>
-                      
-                      <div>
-                        <span style={{ 
-                          display: 'block',
-                          fontWeight: '600', 
-                          color: '#b3b3b3',
-                          marginBottom: '4px'
-                        }}>
-                          Status
-                        </span>
-                        <span style={{ 
-                          display: 'inline-block',
-                          backgroundColor: campaign.status === 'Active' ? '#d4edda' : 
-                                         campaign.status === 'Draft' ? '#fff3cd' : '#f8d7da',
-                          color: campaign.status === 'Active' ? '#155724' : 
-                                 campaign.status === 'Draft' ? '#856404' : '#721c24',
-                          padding: '4px 8px',
-                          borderRadius: '12px',
-                          fontSize: '12px',
-                          fontWeight: '600'
-                        }}>
-                          {campaign.status}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <div style={{ marginTop: '12px' }}>
-                      <span style={{ 
-                        display: 'block',
-                        fontWeight: '600', 
-                        color: '#b3b3b3',
-                        marginBottom: '4px',
-                        fontSize: '14px'
-                      }}>
-                        Last Edited
-                      </span>
-                      <span style={{ 
-                        color: '#e0e0e0', 
-                        fontSize: '14px'
-                      }}>
-                        {new Date(campaign.last_edited).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
-                      </span>
+                      {campaign.id}
                     </div>
                   </div>
-                  
-                  {/* Action Buttons */}
-                  <div style={{ 
-                    borderTop: '1px solid #e9ecef',
-                    paddingTop: '16px',
-                    display: 'flex',
-                    gap: '12px'
+
+                  {/* Campaign Type */}
+                  <div>
+                    <span style={{
+                      backgroundColor: campaign.type === 'multi' ? '#008767' : 
+                                     campaign.type === 'email' ? '#4A90E2' : 
+                                     campaign.type === 'sms' ? '#00AFB9' :
+                                     campaign.type === 'banner' ? '#F59E0B' : 
+                                     campaign.type === 'webhook' ? '#8B5CF6' : '#6B7280',
+                      color: '#FFFFFF',
+                      padding: '4px 8px',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      textTransform: 'uppercase',
+                      borderRadius: '6px',
+                      display: 'inline-block'
+                    }}>
+                      {campaign.type === 'multi' ? 'PUSH' : campaign.type}
+                    </span>
+                  </div>
+
+                  {/* Status */}
+                  <div>
+                    <span style={{
+                      backgroundColor: campaign.status === 'Active' ? '#E6F9F4' : 
+                                     campaign.status === 'Draft' ? '#FEF3C7' : '#FEE4E2',
+                      color: campaign.status === 'Active' ? '#008767' : 
+                             campaign.status === 'Draft' ? '#D97706' : '#D92D20',
+                      padding: '4px 8px',
+                      borderRadius: '12px',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      display: 'inline-block'
+                    }}>
+                      {campaign.status}
+                    </span>
+                  </div>
+
+                  {/* Last Edited */}
+                  <div style={{
+                    color: '#111827', // --color-text-primary
+                    fontSize: '14px'
                   }}>
-                    <button 
-                      className="btn-primary"
+                    {new Date(campaign.last_edited).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    })}
+                  </div>
+
+                  {/* Actions */}
+                  <div style={{
+                    display: 'flex',
+                    gap: '8px',
+                    justifyContent: 'center'
+                  }}>
+                    <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleViewDetails(campaign.id);
                       }}
                       style={{
-                        flex: '1',
-                        backgroundColor: '#404040',
-                        color: '#ffffff',
+                        backgroundColor: '#F3F4F6',
+                        color: '#1D244F', // Deep Navy
                         border: 'none',
-                        padding: '10px 16px',
+                        padding: '6px 12px',
                         borderRadius: '6px',
                         cursor: 'pointer',
-                        fontSize: '14px',
-                        fontWeight: '500'
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = '#E5E7EB';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = '#F3F4F6';
                       }}
                     >
-                      📋 View Details
+                      📋 Details
                     </button>
-                    <button 
-                      className="btn-success"
+                    <button
                       onClick={(e) => {
                         e.stopPropagation();
                         if (isCampaignMigratable(campaign)) {
@@ -814,19 +680,29 @@ function CampaignsPage() {
                       }}
                       disabled={!isCampaignMigratable(campaign)}
                       style={{
-                        flex: '1',
-                        backgroundColor: isCampaignMigratable(campaign) ? '#28a745' : '#6c757d',
-                        color: '#ffffff',
+                        backgroundColor: isCampaignMigratable(campaign) ? '#008767' : '#6B7280', // Success Green or text-secondary
+                        color: '#FFFFFF',
                         border: 'none',
-                        padding: '10px 16px',
+                        padding: '6px 12px',
                         borderRadius: '6px',
                         cursor: isCampaignMigratable(campaign) ? 'pointer' : 'not-allowed',
-                        fontSize: '14px',
+                        fontSize: '12px',
                         fontWeight: '500',
-                        opacity: isCampaignMigratable(campaign) ? 1 : 0.6
+                        opacity: isCampaignMigratable(campaign) ? 1 : 0.6,
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (isCampaignMigratable(campaign)) {
+                          e.target.style.backgroundColor = '#006B4F';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (isCampaignMigratable(campaign)) {
+                          e.target.style.backgroundColor = '#008767';
+                        }
                       }}
                     >
-                      {isCampaignMigratable(campaign) ? '🚀 Migrate' : '❌ Not Available'}
+                      {isCampaignMigratable(campaign) ? '🚀 Migrate' : '❌ N/A'}
                     </button>
                   </div>
                 </div>
@@ -848,9 +724,9 @@ function CampaignsPage() {
                   disabled={currentPage === 1}
                   style={{
                     padding: '8px 12px',
-                    border: '1px solid #404040',
-                    backgroundColor: currentPage === 1 ? '#2a2a2a' : '#1e1e1e',
-                    color: currentPage === 1 ? '#666' : '#ffffff',
+                    border: '1px solid #E5E7EB', // --color-border-subtle
+                    backgroundColor: currentPage === 1 ? '#F3F4F6' : '#FFFFFF', // --color-bg-secondary
+                    color: currentPage === 1 ? '#9CA3AF' : '#111827', // --color-text-primary
                     borderRadius: '6px',
                     cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
                     fontSize: '14px'
@@ -866,9 +742,9 @@ function CampaignsPage() {
                     onClick={() => setCurrentPage(page)}
                     style={{
                       padding: '8px 12px',
-                      border: '1px solid #dee2e6',
-                      backgroundColor: currentPage === page ? '#007bff' : 'white',
-                      color: currentPage === page ? 'white' : '#007bff',
+                      border: '1px solid #E5E7EB', // --color-border-subtle
+                      backgroundColor: currentPage === page ? '#00AFB9' : '#FFFFFF', // Vibrant Teal or bg-secondary
+                      color: currentPage === page ? '#FFFFFF' : '#00AFB9', // White or Vibrant Teal
                       borderRadius: '6px',
                       cursor: 'pointer',
                       fontSize: '14px',
@@ -885,9 +761,9 @@ function CampaignsPage() {
                   disabled={currentPage === totalPages}
                   style={{
                     padding: '8px 12px',
-                    border: '1px solid #404040',
-                    backgroundColor: currentPage === totalPages ? '#2a2a2a' : '#1e1e1e',
-                    color: currentPage === totalPages ? '#666' : '#ffffff',
+                    border: '1px solid #E5E7EB', // --color-border-subtle
+                    backgroundColor: currentPage === totalPages ? '#F3F4F6' : '#FFFFFF', // --color-bg-secondary
+                    color: currentPage === totalPages ? '#9CA3AF' : '#111827', // --color-text-primary
                     borderRadius: '6px',
                     cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
                     fontSize: '14px'
@@ -902,7 +778,7 @@ function CampaignsPage() {
             <div style={{
               textAlign: 'center',
               marginTop: '20px',
-              color: '#b3b3b3',
+              color: '#6B7280', // --color-text-secondary
               fontSize: '14px'
             }}>
               Showing {startIndex + 1}-{Math.min(endIndex, filteredCampaigns.length)} of {filteredCampaigns.length} campaigns
@@ -912,21 +788,21 @@ function CampaignsPage() {
           <div style={{
             textAlign: 'center',
             padding: '60px 20px',
-            backgroundColor: 'white',
+            backgroundColor: '#FFFFFF', // --color-bg-secondary
             borderRadius: '12px',
-            border: '1px solid #e9ecef'
+            border: '1px solid #E5E7EB' // --color-border-subtle
           }}>
             <div style={{ fontSize: '48px', marginBottom: '16px' }}>📭</div>
             <h3 style={{ 
               margin: '0 0 8px 0', 
-              color: '#495057',
+              color: '#1D244F', // Deep Navy
               fontSize: '24px'
             }}>
               No campaigns found
             </h3>
             <p style={{ 
               margin: '0', 
-              color: '#6c757d',
+              color: '#6B7280', // --color-text-secondary
               fontSize: '16px'
             }}>
               {searchTerm || filterType !== 'all' 
@@ -941,8 +817,8 @@ function CampaignsPage() {
                 }}
                 style={{
                   marginTop: '16px',
-                  backgroundColor: '#007bff',
-                  color: 'white',
+                  backgroundColor: '#00AFB9', // Vibrant Teal
+                  color: '#FFFFFF',
                   border: 'none',
                   padding: '10px 20px',
                   borderRadius: '6px',

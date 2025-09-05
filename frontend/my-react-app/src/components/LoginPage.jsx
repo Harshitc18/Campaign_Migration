@@ -76,172 +76,55 @@ function LoginPage() {
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#121212',
-      color: '#ffffff',
+      backgroundColor: '#F9FAFB', // --color-bg-primary
+      color: '#111827', // --color-text-primary
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
       padding: '20px'
     }}>
       <div style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 400px',
-        gap: '40px',
-        maxWidth: '900px',
-        width: '100%',
-        alignItems: 'start'
+        maxWidth: '1000px',
+        width: '100%'
       }}>
-        {/* Left Column - Welcome Section */}
+        {/* Login Form */}
         <div style={{
-          backgroundColor: '#1e1e1e',
+          backgroundColor: '#FFFFFF', // --color-bg-secondary
           padding: '40px',
           borderRadius: '12px',
-          border: '1px solid #404040'
-        }}>
-          <h1 style={{
-            margin: '0 0 20px 0',
-            fontSize: '32px',
-            fontWeight: '700',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
-          }}>
-            🚀 Migration Tool Kit
-          </h1>
-          
-          <p style={{
-            marginBottom: '30px',
-            lineHeight: '1.6',
-            color: '#b3b3b3',
-            fontSize: '16px'
-          }}>
-            Seamlessly migrate your Braze campaigns to MoEngage with our automated migration tool. 
-            Get started by authenticating with your Braze dashboard.
-          </p>
-
-          <div style={{
-            backgroundColor: '#2a2a2a',
-            padding: '20px',
-            borderRadius: '8px',
-            border: '1px solid #404040',
-            marginBottom: '20px'
-          }}>
-            <h3 style={{
-              color: '#ffffff',
-              marginTop: '0',
-              marginBottom: '15px',
-              fontSize: '18px'
-            }}>
-              ✨ Features
-            </h3>
-            <ul style={{
-              listStyle: 'none',
-              padding: 0,
-              margin: 0
-            }}>
-              <li style={{ marginBottom: '8px', color: '#b3b3b3' }}>
-                📧 Email campaign migration
-              </li>
-              <li style={{ marginBottom: '8px', color: '#b3b3b3' }}>
-                📱 Push notification migration
-              </li>
-              <li style={{ marginBottom: '8px', color: '#b3b3b3' }}>
-                💬 SMS campaign migration
-              </li>
-              <li style={{ marginBottom: '8px', color: '#b3b3b3' }}>
-                🔄 Automated content conversion
-              </li>
-              <li style={{ color: '#b3b3b3' }}>
-                📊 Real-time progress tracking
-              </li>
-            </ul>
-          </div>
-
-          <div style={{
-            backgroundColor: '#2a2a2a',
-            padding: '20px',
-            borderRadius: '8px',
-            border: '1px solid #404040'
-          }}>
-            <h3 style={{ 
-              color: '#ffffff', 
-              marginTop: '0',
-              marginBottom: '15px',
-              fontSize: '18px'
-            }}>
-              🧪 Testing Tools
-            </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <button 
-                onClick={() => navigate('/push-migrator')}
-                style={{ 
-                  padding: '12px 16px', 
-                  backgroundColor: '#FF6B35', 
-                  color: 'white', 
-                  border: 'none', 
-                  borderRadius: '6px', 
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#E55A2B'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = '#FF6B35'}
-              >
-                📱 Push Migration Testing
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column - Login Form */}
-        <div style={{
-          backgroundColor: '#1e1e1e',
-          padding: '40px',
-          borderRadius: '12px',
-          border: '1px solid #404040'
+          border: '1px solid #E5E7EB', // --color-border-subtle
+          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'
         }}>
           {/* Braze Authentication Section */}
           <h3 style={{ 
-            color: '#ffffff', 
+            color: '#1D244F', // Deep Navy
             marginBottom: '8px',
-            fontSize: '18px'
+            fontSize: '18px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
           }}>
             🔐 Braze Authentication
           </h3>
           <p style={{ 
-            color: '#b3b3b3', 
+            color: '#6B7280', // --color-text-secondary
             marginBottom: '25px',
             fontSize: '14px'
           }}>
             {hasStoredCredentials 
-              ? "✅ Credentials found! Click 'Start Migration' to continue or update fields below"
+              ? "Enter your Braze dashboard credentials to get started"
               : "Enter your Braze dashboard credentials to get started"
             }
           </p>
 
-          {hasStoredCredentials && (
-            <div style={{
-              backgroundColor: '#d1ecf1',
-              color: '#0c5460',
-              padding: '12px',
-              borderRadius: '6px',
-              marginBottom: '20px',
-              border: '1px solid #bee5eb'
-            }}>
-              💾 Using stored credentials. You can update them below if needed.
-            </div>
-          )}
-
           {success && (
             <div style={{
-              backgroundColor: '#d4edda',
-              color: '#155724',
+              backgroundColor: '#E6F9F4', // Success Green BG
+              color: '#008767', // Success Green text
               padding: '12px',
               borderRadius: '6px',
               marginBottom: '20px',
-              border: '1px solid #c3e6cb'
+              border: '1px solid #E5E7EB'
             }}>
               ✅ Authentication successful! Redirecting to campaigns...
             </div>
@@ -249,12 +132,12 @@ function LoginPage() {
 
           {error && (
             <div style={{
-              backgroundColor: '#f8d7da',
-              color: '#721c24',
+              backgroundColor: '#FEE4E2', // Danger Red BG
+              color: '#D92D20', // Danger Red text
               padding: '12px',
               borderRadius: '6px',
               marginBottom: '20px',
-              border: '1px solid #f5c6cb'
+              border: '1px solid #E5E7EB'
             }}>
               ⚠️ {error}
             </div>
@@ -265,7 +148,7 @@ function LoginPage() {
               <label style={{
                 display: 'block',
                 marginBottom: '8px',
-                color: '#e0e0e0',
+                color: '#111827', // --color-text-primary
                 fontSize: '14px',
                 fontWeight: '500'
               }}>
@@ -278,13 +161,16 @@ function LoginPage() {
                 style={{
                   width: '100%',
                   padding: '12px',
-                  backgroundColor: '#2a2a2a',
-                  border: '1px solid #404040',
+                  backgroundColor: '#FFFFFF', // --color-bg-secondary
+                  border: '1px solid #E5E7EB', // --color-border-subtle
                   borderRadius: '6px',
-                  color: '#ffffff',
+                  color: '#111827', // --color-text-primary
                   fontSize: '14px',
-                  boxSizing: 'border-box'
+                  boxSizing: 'border-box',
+                  outline: 'none'
                 }}
+                onFocus={(e) => e.target.style.borderColor = '#00AFB9'} // Vibrant Teal focus
+                onBlur={(e) => e.target.style.borderColor = '#E5E7EB'}
                 placeholder="https://dashboard-XX.braze.com"
                 required
               />
@@ -294,7 +180,7 @@ function LoginPage() {
               <label style={{
                 display: 'block',
                 marginBottom: '8px',
-                color: '#e0e0e0',
+                color: '#111827', // --color-text-primary
                 fontSize: '14px',
                 fontWeight: '500'
               }}>
@@ -307,13 +193,16 @@ function LoginPage() {
                 style={{
                   width: '100%',
                   padding: '12px',
-                  backgroundColor: '#2a2a2a',
-                  border: '1px solid #404040',
+                  backgroundColor: '#FFFFFF', // --color-bg-secondary
+                  border: '1px solid #E5E7EB', // --color-border-subtle
                   borderRadius: '6px',
-                  color: '#ffffff',
+                  color: '#111827', // --color-text-primary
                   fontSize: '14px',
-                  boxSizing: 'border-box'
+                  boxSizing: 'border-box',
+                  outline: 'none'
                 }}
+                onFocus={(e) => e.target.style.borderColor = '#00AFB9'} // Vibrant Teal focus
+                onBlur={(e) => e.target.style.borderColor = '#E5E7EB'}
                 placeholder="Enter your session ID"
                 required
               />
@@ -323,7 +212,7 @@ function LoginPage() {
               <label style={{
                 display: 'block',
                 marginBottom: '8px',
-                color: '#e0e0e0',
+                color: '#111827', // --color-text-primary
                 fontSize: '14px',
                 fontWeight: '500'
               }}>
@@ -336,13 +225,16 @@ function LoginPage() {
                 style={{
                   width: '100%',
                   padding: '12px',
-                  backgroundColor: '#2a2a2a',
-                  border: '1px solid #404040',
+                  backgroundColor: '#FFFFFF', // --color-bg-secondary
+                  border: '1px solid #E5E7EB', // --color-border-subtle
                   borderRadius: '6px',
-                  color: '#ffffff',
+                  color: '#111827', // --color-text-primary
                   fontSize: '14px',
-                  boxSizing: 'border-box'
+                  boxSizing: 'border-box',
+                  outline: 'none'
                 }}
+                onFocus={(e) => e.target.style.borderColor = '#00AFB9'} // Vibrant Teal focus
+                onBlur={(e) => e.target.style.borderColor = '#E5E7EB'}
                 placeholder="Enter your app group ID"
                 required
               />
@@ -354,8 +246,8 @@ function LoginPage() {
               style={{
                 width: '100%',
                 padding: '14px',
-                backgroundColor: loading ? '#555' : (hasStoredCredentials ? '#28a745' : '#007bff'),
-                color: '#ffffff',
+                backgroundColor: loading ? '#6B7280' : '#00AFB9', // Vibrant Teal or disabled
+                color: '#FFFFFF', // --color-text-on-interactive
                 border: 'none',
                 borderRadius: '8px',
                 fontSize: '16px',
@@ -363,6 +255,16 @@ function LoginPage() {
                 cursor: loading ? 'not-allowed' : 'pointer',
                 transition: 'all 0.3s ease',
                 opacity: loading ? 0.7 : 1
+              }}
+              onMouseEnter={(e) => {
+                if (!loading) {
+                  e.target.style.backgroundColor = '#009DA6'; // Hover state
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!loading) {
+                  e.target.style.backgroundColor = '#00AFB9';
+                }
               }}
             >
               {loading ? (
@@ -398,8 +300,8 @@ function LoginPage() {
                   width: '100%',
                   padding: '12px',
                   backgroundColor: 'transparent',
-                  color: '#dc3545',
-                  border: '1px solid #dc3545',
+                  color: '#D92D20', // Danger Red
+                  border: '1px solid #D92D20',
                   borderRadius: '6px',
                   fontSize: '14px',
                   fontWeight: '500',
@@ -408,12 +310,12 @@ function LoginPage() {
                   transition: 'all 0.3s ease'
                 }}
                 onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = '#dc3545';
-                  e.target.style.color = '#ffffff';
+                  e.target.style.backgroundColor = '#D92D20';
+                  e.target.style.color = '#FFFFFF';
                 }}
                 onMouseLeave={(e) => {
                   e.target.style.backgroundColor = 'transparent';
-                  e.target.style.color = '#dc3545';
+                  e.target.style.color = '#D92D20';
                 }}
               >
                 🗑️ Clear Stored Credentials
@@ -424,21 +326,24 @@ function LoginPage() {
           <div style={{
             marginTop: '25px',
             padding: '15px',
-            backgroundColor: '#2a2a2a',
+            backgroundColor: '#F9FAFB', // --color-bg-primary (subtle background)
             borderRadius: '6px',
-            border: '1px solid #404040'
+            border: '1px solid #E5E7EB'
           }}>
             <h4 style={{
               margin: '0 0 10px 0',
-              color: '#ffffff',
-              fontSize: '14px'
+              color: '#1D244F', // Deep Navy
+              fontSize: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
             }}>
               💡 How to get credentials:
             </h4>
             <ol style={{
               margin: 0,
               paddingLeft: '20px',
-              color: '#b3b3b3',
+              color: '#6B7280', // --color-text-secondary
               fontSize: '12px',
               lineHeight: '1.4'
             }}>

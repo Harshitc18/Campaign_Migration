@@ -122,44 +122,62 @@ function ViewDetailsPage() {
     return (
       <div style={{ 
         marginBottom: '20px',
-        border: '1px solid #404040',
-        borderRadius: '8px',
-        overflow: 'hidden'
+        border: '1px solid #E5E7EB', // --color-border-subtle
+        borderRadius: '12px',
+        overflow: 'hidden',
+        backgroundColor: '#FFFFFF', // --color-bg-secondary
+        boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
       }}>
         <div 
           style={{
-            backgroundColor: '#2a2a2a',
-            padding: '12px 16px',
-            borderBottom: expanded ? '1px solid #404040' : 'none',
+            backgroundColor: '#F9FAFB', // --color-bg-primary
+            padding: '16px 20px',
+            borderBottom: expanded ? '1px solid #E5E7EB' : 'none',
             cursor: 'pointer',
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center'
+            alignItems: 'center',
+            transition: 'all 0.2s ease'
           }}
           onClick={() => toggleSection(sectionKey)}
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = '#F3F4F6';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = '#F9FAFB';
+          }}
         >
-          <h4 style={{ margin: 0, color: '#ffffff' }}>{title}</h4>
+          <h4 style={{ 
+            margin: 0, 
+            color: '#1D244F', // Deep Navy
+            fontSize: '16px',
+            fontWeight: '600'
+          }}>
+            {title}
+          </h4>
           <span style={{ 
             transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)',
             transition: 'transform 0.2s ease',
-            color: '#b3b3b3'
+            color: '#6B7280', // --color-text-secondary
+            fontSize: '12px'
           }}>
             ▶
           </span>
         </div>
         {expanded && (
-          <div style={{ padding: '16px' }}>
+          <div style={{ padding: '20px' }}>
             <pre style={{
-              backgroundColor: '#1e1e1e',
-              color: '#e0e0e0',
-              padding: '12px',
-              borderRadius: '4px',
+              backgroundColor: '#F9FAFB', // --color-bg-primary
+              color: '#111827', // --color-text-primary
+              padding: '16px',
+              borderRadius: '8px',
               overflow: 'auto',
               fontSize: '12px',
-              lineHeight: '1.4',
+              lineHeight: '1.5',
               margin: 0,
               maxHeight: '400px',
-              border: '1px solid #404040'
+              border: '1px solid #E5E7EB', // --color-border-subtle
+              fontFamily: 'Monaco, Consolas, "Courier New", monospace'
             }}>
               {formatJson(data)}
             </pre>
@@ -177,9 +195,24 @@ function ViewDetailsPage() {
         justifyContent: 'center', 
         alignItems: 'center', 
         height: '50vh',
-        fontSize: '18px'
+        fontSize: '18px',
+        color: '#6B7280' // --color-text-secondary
       }}>
-        Loading campaign details...
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px'
+        }}>
+          <div style={{
+            width: '20px',
+            height: '20px',
+            border: '3px solid #E5E7EB',
+            borderTop: '3px solid #00AFB9', // Vibrant Teal
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite'
+          }}></div>
+          Loading campaign details...
+        </div>
       </div>
     );
   }
@@ -189,27 +222,41 @@ function ViewDetailsPage() {
     return (
       <div style={{ 
         padding: '20px',
-        textAlign: 'center'
+        textAlign: 'center',
+        minHeight: '100vh',
+        backgroundColor: '#F9FAFB', // --color-bg-primary
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'column',
+        gap: '20px'
       }}>
-        <div style={{ 
-          color: 'red', 
-          fontSize: '18px',
-          marginBottom: '20px'
+        <div style={{
+          padding: '20px 40px',
+          backgroundColor: '#FEE4E2', // Danger Red BG
+          color: '#D92D20', // Danger Red text
+          border: '1px solid #E5E7EB',
+          borderRadius: '8px',
+          fontSize: '16px',
+          maxWidth: '500px',
+          textAlign: 'center'
         }}>
-          Error: {error}
+          ⚠️ Error: {error}
         </div>
         <button 
           onClick={() => navigate('/campaigns')}
           style={{
-            backgroundColor: '#007bff',
-            color: 'white',
+            backgroundColor: '#00AFB9', // Vibrant Teal
+            color: '#FFFFFF',
             border: 'none',
-            padding: '10px 20px',
-            borderRadius: '4px',
-            cursor: 'pointer'
+            padding: '12px 24px',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: '500'
           }}
         >
-          Back to Campaigns
+          ← Back to Campaigns
         </button>
       </div>
     );
@@ -218,164 +265,336 @@ function ViewDetailsPage() {
   // Render campaign details
   return (
     <div style={{ 
-      padding: '20px', 
-      maxWidth: '1200px', 
-      margin: '0 auto',
-      backgroundColor: '#121212',
-      color: '#ffffff',
+      padding: '0', 
+      backgroundColor: '#F9FAFB', // --color-bg-primary
+      color: '#111827', // --color-text-primary
       minHeight: '100vh'
     }}>
-      {/* Header */}
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        marginBottom: '30px',
-        paddingBottom: '20px',
-        borderBottom: '2px solid #404040'
+      {/* Add CSS keyframes for loading animation */}
+      <style>
+        {`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}
+      </style>
+
+      {/* Header Section */}
+      <div style={{
+        background: 'linear-gradient(135deg, #1D244F 0%, #00AFB9 100%)', // Deep Navy to Vibrant Teal
+        color: '#FFFFFF',
+        padding: '40px 20px',
+        boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
       }}>
-        <div>
-          <h1 style={{ margin: '0 0 8px 0', color: '#ffffff' }}>Campaign Details</h1>
-          <p style={{ margin: 0, color: '#b3b3b3', fontSize: '14px' }}>
-            Campaign ID: {campaignId}
-          </p>
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '20px'
+        }}>
+          <div>
+            <h1 style={{ 
+              margin: '0 0 8px 0', 
+              fontSize: '32px',
+              fontWeight: '700'
+            }}>
+              📋 Campaign Details
+            </h1>
+            <p style={{ 
+              margin: 0, 
+              fontSize: '16px',
+              opacity: '0.9'
+            }}>
+              Campaign ID: {campaignId}
+            </p>
+          </div>
+          <button 
+            onClick={() => navigate('/campaigns')}
+            style={{
+              backgroundColor: '#FFFFFF',
+              color: '#1D244F', // Deep Navy
+              border: 'none',
+              padding: '12px 24px',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '600',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#F3F4F6';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = '#FFFFFF';
+            }}
+          >
+            ← Back to Campaigns
+          </button>
         </div>
-        <button 
-          onClick={() => navigate('/campaigns')}
-          style={{
-            backgroundColor: '#404040',
-            color: '#ffffff',
-            border: 'none',
-            padding: '10px 20px',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          ← Back to Campaigns
-        </button>
       </div>
 
-      {/* Campaign Summary */}
-      {campaignDetails && campaignDetails.campaign && (
-        <div style={{
-          backgroundColor: '#1e1e1e',
-          padding: '20px',
-          borderRadius: '8px',
-          marginBottom: '30px',
-          border: '1px solid #404040'
-        }}>
-          <h2 style={{ margin: '0 0 15px 0', color: '#ffffff' }}>
-            {campaignDetails.campaign.campaign_name || 'Unnamed Campaign'}
-          </h2>
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-            gap: '15px',
-            color: '#e0e0e0' 
+      <div style={{
+        maxWidth: '1200px',
+        margin: '0 auto',
+        padding: '40px 20px'
+      }}>
+        {/* Campaign Summary */}
+        {campaignDetails && campaignDetails.campaign && (
+          <div style={{
+            backgroundColor: '#FFFFFF', // --color-bg-secondary
+            padding: '30px',
+            borderRadius: '12px',
+            marginBottom: '30px',
+            border: '1px solid #E5E7EB', // --color-border-subtle
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
           }}>
-            <div>
-              <strong style={{ color: '#ffffff' }}>Type:</strong> {campaignDetails.campaign.campaign_type || 'Unknown'}
-            </div>
-            <div>
-              <strong style={{ color: '#ffffff' }}>Status:</strong> {campaignDetails.campaign.status || 'Unknown'}
-            </div>
-            <div>
-              <strong style={{ color: '#ffffff' }}>Created:</strong> {campaignDetails.campaign.created_at ? 
-                new Date(campaignDetails.campaign.created_at).toLocaleDateString() : 'Unknown'}
-            </div>
-            <div>
-              <strong style={{ color: '#ffffff' }}>Last Edited:</strong> {campaignDetails.campaign.last_edited ? 
-                new Date(campaignDetails.campaign.last_edited).toLocaleDateString() : 'Unknown'}
+            <h2 style={{ 
+              margin: '0 0 20px 0', 
+              color: '#1D244F', // Deep Navy
+              fontSize: '24px',
+              fontWeight: '600'
+            }}>
+              {campaignDetails.campaign.campaign_name || 'Unnamed Campaign'}
+            </h2>
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
+              gap: '20px',
+              color: '#111827' // --color-text-primary
+            }}>
+              <div style={{
+                padding: '16px',
+                backgroundColor: '#F9FAFB', // --color-bg-primary
+                borderRadius: '8px',
+                border: '1px solid #E5E7EB'
+              }}>
+                <div style={{ 
+                  fontWeight: '600', 
+                  color: '#6B7280', // --color-text-secondary
+                  fontSize: '14px',
+                  marginBottom: '4px'
+                }}>
+                  Campaign Type
+                </div>
+                <div style={{ 
+                  color: '#1D244F', // Deep Navy
+                  fontSize: '16px',
+                  fontWeight: '500'
+                }}>
+                  {campaignDetails.campaign.campaign_type || 'Unknown'}
+                </div>
+              </div>
+              <div style={{
+                padding: '16px',
+                backgroundColor: '#F9FAFB', // --color-bg-primary
+                borderRadius: '8px',
+                border: '1px solid #E5E7EB'
+              }}>
+                <div style={{ 
+                  fontWeight: '600', 
+                  color: '#6B7280', // --color-text-secondary
+                  fontSize: '14px',
+                  marginBottom: '4px'
+                }}>
+                  Status
+                </div>
+                <div style={{ 
+                  color: '#1D244F', // Deep Navy
+                  fontSize: '16px',
+                  fontWeight: '500'
+                }}>
+                  {campaignDetails.campaign.status || 'Unknown'}
+                </div>
+              </div>
+              <div style={{
+                padding: '16px',
+                backgroundColor: '#F9FAFB', // --color-bg-primary
+                borderRadius: '8px',
+                border: '1px solid #E5E7EB'
+              }}>
+                <div style={{ 
+                  fontWeight: '600', 
+                  color: '#6B7280', // --color-text-secondary
+                  fontSize: '14px',
+                  marginBottom: '4px'
+                }}>
+                  Created Date
+                </div>
+                <div style={{ 
+                  color: '#1D244F', // Deep Navy
+                  fontSize: '16px',
+                  fontWeight: '500'
+                }}>
+                  {campaignDetails.campaign.created_at ? 
+                    new Date(campaignDetails.campaign.created_at).toLocaleDateString() : 'Unknown'}
+                </div>
+              </div>
+              <div style={{
+                padding: '16px',
+                backgroundColor: '#F9FAFB', // --color-bg-primary
+                borderRadius: '8px',
+                border: '1px solid #E5E7EB'
+              }}>
+                <div style={{ 
+                  fontWeight: '600', 
+                  color: '#6B7280', // --color-text-secondary
+                  fontSize: '14px',
+                  marginBottom: '4px'
+                }}>
+                  Last Edited
+                </div>
+                <div style={{ 
+                  color: '#1D244F', // Deep Navy
+                  fontSize: '16px',
+                  fontWeight: '500'
+                }}>
+                  {campaignDetails.campaign.last_edited ? 
+                    new Date(campaignDetails.campaign.last_edited).toLocaleDateString() : 'Unknown'}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Action Buttons */}
-      <div style={{ 
-        display: 'flex', 
-        gap: '10px', 
-        marginBottom: '30px',
-        flexWrap: 'wrap'
-      }}>
-        <button
-          onClick={() => setJsonView(jsonView === 'formatted' ? 'raw' : 'formatted')}
-          style={{
-            backgroundColor: '#404040',
-            color: '#ffffff',
-            border: 'none',
-            padding: '10px 20px',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          {jsonView === 'formatted' ? 'Show Raw JSON' : 'Show Formatted View'}
-        </button>
-        <button
-          onClick={handleCopyToClipboard}
-          style={{
-            backgroundColor: '#28a745',
-            color: '#ffffff',
-            border: 'none',
-            padding: '10px 20px',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          📋 Copy JSON
-        </button>
-        <button
-          onClick={handleDownloadJson}
-          style={{
-            backgroundColor: '#ffc107',
-            color: '#000000',
-            border: 'none',
-            padding: '10px 20px',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          💾 Download JSON
-        </button>
+        {/* Action Buttons */}
+        <div style={{ 
+          display: 'flex', 
+          gap: '12px', 
+          marginBottom: '30px',
+          flexWrap: 'wrap'
+        }}>
+          <button
+            onClick={() => setJsonView(jsonView === 'formatted' ? 'raw' : 'formatted')}
+            style={{
+              backgroundColor: '#F3F4F6',
+              color: '#1D244F', // Deep Navy
+              border: '1px solid #E5E7EB',
+              padding: '12px 20px',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#E5E7EB';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = '#F3F4F6';
+            }}
+          >
+            {jsonView === 'formatted' ? '📄 Show Raw JSON' : '📋 Show Formatted View'}
+          </button>
+          <button
+            onClick={handleCopyToClipboard}
+            style={{
+              backgroundColor: '#008767', // Success Green
+              color: '#FFFFFF',
+              border: 'none',
+              padding: '12px 20px',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#006B4F';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = '#008767';
+            }}
+          >
+            📋 Copy JSON
+          </button>
+          <button
+            onClick={handleDownloadJson}
+            style={{
+              backgroundColor: '#F59E0B', // Warning Yellow
+              color: '#FFFFFF',
+              border: 'none',
+              padding: '12px 20px',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#D97706';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = '#F59E0B';
+            }}
+          >
+            💾 Download JSON
+          </button>
+        </div>
+
+        {/* JSON Content */}
+        {campaignDetails && (
+          <div>
+            {jsonView === 'formatted' ? (
+              <div>
+                <h3 style={{ 
+                  marginBottom: '24px', 
+                  color: '#1D244F', // Deep Navy
+                  fontSize: '20px',
+                  fontWeight: '600'
+                }}>
+                  📊 Campaign Structure
+                </h3>
+                {renderJsonSection('Campaign Info', campaignDetails.campaign, 'campaignInfo')}
+                {campaignDetails.campaign.messaging_actions && 
+                  renderJsonSection('Messaging Actions', campaignDetails.campaign.messaging_actions, 'messagingActions')}
+                {campaignDetails.campaign.filters && 
+                  renderJsonSection('Filters', campaignDetails.campaign.filters, 'filters')}
+                {campaignDetails.campaign.conversion_behaviors && 
+                  renderJsonSection('Conversion Behaviors', campaignDetails.campaign.conversion_behaviors, 'conversionBehaviors')}
+                {campaignDetails.campaign.schedule_data && 
+                  renderJsonSection('Schedule Data', campaignDetails.campaign.schedule_data, 'scheduleData')}
+                {renderJsonSection('Full Raw Data', campaignDetails, 'fullRawData')}
+              </div>
+            ) : (
+              <div>
+                <h3 style={{ 
+                  marginBottom: '24px', 
+                  color: '#1D244F', // Deep Navy
+                  fontSize: '20px',
+                  fontWeight: '600'
+                }}>
+                  🔍 Raw JSON Data
+                </h3>
+                <div style={{
+                  backgroundColor: '#FFFFFF', // --color-bg-secondary
+                  border: '1px solid #E5E7EB', // --color-border-subtle
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                }}>
+                  <pre style={{
+                    backgroundColor: '#F9FAFB', // --color-bg-primary
+                    color: '#111827', // --color-text-primary
+                    padding: '24px',
+                    overflow: 'auto',
+                    fontSize: '12px',
+                    lineHeight: '1.5',
+                    margin: 0,
+                    maxHeight: '80vh',
+                    fontFamily: 'Monaco, Consolas, "Courier New", monospace'
+                  }}>
+                    {formatJson(campaignDetails)}
+                  </pre>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
-
-      {/* JSON Content */}
-      {campaignDetails && (
-        <div>
-          {jsonView === 'formatted' ? (
-            <div>
-              <h3 style={{ marginBottom: '20px', color: '#333' }}>Campaign Structure</h3>
-              {renderJsonSection('Campaign Info', campaignDetails.campaign, 'campaignInfo')}
-              {campaignDetails.campaign.messaging_actions && 
-                renderJsonSection('Messaging Actions', campaignDetails.campaign.messaging_actions, 'messagingActions')}
-              {campaignDetails.campaign.filters && 
-                renderJsonSection('Filters', campaignDetails.campaign.filters, 'filters')}
-              {campaignDetails.campaign.conversion_behaviors && 
-                renderJsonSection('Conversion Behaviors', campaignDetails.campaign.conversion_behaviors, 'conversionBehaviors')}
-              {campaignDetails.campaign.schedule_data && 
-                renderJsonSection('Schedule Data', campaignDetails.campaign.schedule_data, 'scheduleData')}
-              {renderJsonSection('Full Raw Data', campaignDetails, 'fullRawData')}
-            </div>
-          ) : (
-            <div>
-              <h3 style={{ marginBottom: '20px', color: '#ffffff' }}>Raw JSON Data</h3>
-              <pre style={{
-                backgroundColor: '#1e1e1e',
-                color: '#e0e0e0',
-                padding: '20px',
-                borderRadius: '8px',
-                overflow: 'auto',
-                fontSize: '12px',
-                lineHeight: '1.4',
-                border: '1px solid #404040',
-                maxHeight: '80vh'
-              }}>
-                {formatJson(campaignDetails)}
-              </pre>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }

@@ -437,23 +437,29 @@ function MigrationProgressPage() {
     return (
       <div style={{
         minHeight: '100vh',
-        backgroundColor: '#121212',
-        color: '#ffffff',
+        backgroundColor: '#F9FAFB', // --color-bg-primary
+        color: '#111827', // --color-text-primary
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center'
       }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{
-            width: '40px',
-            height: '40px',
-            border: '4px solid #333',
-            borderTop: '4px solid #007bff',
+            width: '48px',
+            height: '48px',
+            border: '4px solid #E5E7EB', // --color-border-subtle
+            borderTop: '4px solid #00AFB9', // Vibrant Teal
             borderRadius: '50%',
             animation: 'spin 1s linear infinite',
-            margin: '0 auto 20px'
+            margin: '0 auto 24px'
           }}></div>
-          <p>Loading migration data...</p>
+          <p style={{
+            fontSize: '18px',
+            color: '#6B7280', // --color-text-secondary
+            margin: 0
+          }}>
+            Loading migration data...
+          </p>
         </div>
       </div>
     );
@@ -462,9 +468,9 @@ function MigrationProgressPage() {
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#121212',
-      color: '#ffffff',
-      padding: '20px'
+      backgroundColor: '#F9FAFB', // --color-bg-primary
+      color: '#111827', // --color-text-primary
+      padding: '0'
     }}>
       <style>
         {`
@@ -474,160 +480,261 @@ function MigrationProgressPage() {
           }
           @keyframes pulse {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            50% { opacity: 0.7; }
+          }
+          @keyframes progressGlow {
+            0%, 100% { box-shadow: 0 0 5px rgba(0, 175, 185, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(0, 175, 185, 0.8); }
+          }
+          @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(200%); }
           }
         `}
       </style>
 
+      {/* Header Section */}
       <div style={{
-        maxWidth: '800px',
-        margin: '0 auto'
+        background: 'linear-gradient(135deg, #1D244F 0%, #00AFB9 100%)', // Deep Navy to Vibrant Teal
+        color: '#FFFFFF',
+        padding: '40px 20px',
+        textAlign: 'center',
+        boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
       }}>
-        {/* Header */}
-        <div style={{
-          textAlign: 'center',
-          marginBottom: '40px',
-          paddingBottom: '20px',
-          borderBottom: '1px solid #404040'
+        <h1 style={{
+          margin: '0 0 12px 0',
+          fontSize: '42px',
+          fontWeight: '700',
+          textShadow: '0 2px 4px rgba(0,0,0,0.3)'
         }}>
-          <h1 style={{
-            margin: '0 0 10px 0',
-            fontSize: '32px',
-            fontWeight: '700'
-          }}>
-            🚀 Campaign Migration
-          </h1>
-          <p style={{
-            margin: 0,
-            color: '#b3b3b3',
-            fontSize: '18px'
-          }}>
-            Migrating {migrationData.campaigns.length} campaign(s) to MoEngage
-          </p>
-        </div>
+          🚀 Campaign Migration
+        </h1>
+        <p style={{
+          margin: '0',
+          fontSize: '18px',
+          opacity: '0.9'
+        }}>
+          Migrating {migrationData.campaigns.length} campaign(s) to MoEngage
+        </p>
+      </div>
+
+      <div style={{
+        maxWidth: '900px',
+        margin: '0 auto',
+        padding: '40px 20px'
+      }}>
 
         {/* Phase Indicators */}
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
-          marginBottom: '40px',
-          padding: '0 20px'
+          marginBottom: '50px',
+          padding: '0 40px',
+          position: 'relative'
         }}>
+          {/* Progress Line */}
           <div style={{
-            textAlign: 'center',
-            opacity: currentPhase === 'preparing' ? 1 : 0.5
+            position: 'absolute',
+            top: '20px',
+            left: '20%',
+            right: '20%',
+            height: '4px',
+            backgroundColor: '#E5E7EB', // --color-border-subtle
+            borderRadius: '2px',
+            zIndex: 1
           }}>
             <div style={{
-              width: '40px',
-              height: '40px',
+              height: '100%',
+              backgroundColor: '#00AFB9', // Vibrant Teal
+              borderRadius: '2px',
+              width: currentPhase === 'preparing' ? '0%' : 
+                     currentPhase === 'migrating' ? '50%' : '100%',
+              transition: 'width 0.5s ease'
+            }}></div>
+          </div>
+
+          <div style={{
+            textAlign: 'center',
+            position: 'relative',
+            zIndex: 2
+          }}>
+            <div style={{
+              width: '48px',
+              height: '48px',
               borderRadius: '50%',
-              backgroundColor: currentPhase === 'preparing' ? '#007bff' : '#404040',
+              backgroundColor: '#00AFB9', // Vibrant Teal
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              margin: '0 auto 10px',
-              fontSize: '18px'
+              margin: '0 auto 12px',
+              fontSize: '20px',
+              boxShadow: '0 4px 12px rgba(0, 175, 185, 0.3)',
+              border: '3px solid #FFFFFF'
             }}>
               ⚙️
             </div>
-            <div style={{ fontSize: '14px' }}>Preparing</div>
-          </div>
-          
-          <div style={{
-            textAlign: 'center',
-            opacity: currentPhase === 'migrating' ? 1 : 0.5
-          }}>
-            <div style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '50%',
-              backgroundColor: currentPhase === 'migrating' ? '#28a745' : '#404040',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 10px',
-              fontSize: '18px',
-              animation: currentPhase === 'migrating' ? 'pulse 1.5s infinite' : 'none'
+            <div style={{ 
+              fontSize: '16px',
+              fontWeight: '600',
+              color: '#1D244F' // Deep Navy
             }}>
-              🔄
+              Preparing
             </div>
-            <div style={{ fontSize: '14px' }}>Migrating</div>
           </div>
           
           <div style={{
             textAlign: 'center',
-            opacity: currentPhase === 'completed' ? 1 : 0.5
+            position: 'relative',
+            zIndex: 2
           }}>
             <div style={{
-              width: '40px',
-              height: '40px',
+              width: '48px',
+              height: '48px',
               borderRadius: '50%',
-              backgroundColor: currentPhase === 'completed' ? '#28a745' : '#404040',
+              backgroundColor: currentPhase === 'migrating' || currentPhase === 'completed' ? '#008767' : '#E5E7EB', // Success Green or border-subtle
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              margin: '0 auto 10px',
-              fontSize: '18px'
+              margin: '0 auto 12px',
+              fontSize: '20px',
+              animation: currentPhase === 'migrating' ? 'pulse 1.5s infinite' : 'none',
+              boxShadow: currentPhase === 'migrating' || currentPhase === 'completed' ? '0 4px 12px rgba(0, 135, 103, 0.3)' : 'none',
+              border: '3px solid #FFFFFF',
+              transition: 'all 0.3s ease'
+            }}>
+              {currentPhase === 'migrating' ? '🔄' : currentPhase === 'completed' ? '✅' : '🔄'}
+            </div>
+            <div style={{ 
+              fontSize: '16px',
+              fontWeight: '600',
+              color: currentPhase === 'migrating' || currentPhase === 'completed' ? '#1D244F' : '#6B7280' // Deep Navy or text-secondary
+            }}>
+              Migrating
+            </div>
+          </div>
+          
+          <div style={{
+            textAlign: 'center',
+            position: 'relative',
+            zIndex: 2
+          }}>
+            <div style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '50%',
+              backgroundColor: currentPhase === 'completed' ? '#008767' : '#E5E7EB', // Success Green or border-subtle
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 12px',
+              fontSize: '20px',
+              boxShadow: currentPhase === 'completed' ? '0 4px 12px rgba(0, 135, 103, 0.3)' : 'none',
+              border: '3px solid #FFFFFF',
+              transition: 'all 0.3s ease'
             }}>
               ✅
             </div>
-            <div style={{ fontSize: '14px' }}>Completed</div>
+            <div style={{ 
+              fontSize: '16px',
+              fontWeight: '600',
+              color: currentPhase === 'completed' ? '#1D244F' : '#6B7280' // Deep Navy or text-secondary
+            }}>
+              Completed
+            </div>
           </div>
         </div>
 
         {/* Progress Section */}
         {currentPhase === 'migrating' && (
           <div style={{
-            backgroundColor: '#1e1e1e',
-            border: '1px solid #404040',
-            borderRadius: '12px',
-            padding: '30px',
-            marginBottom: '30px'
+            backgroundColor: '#FFFFFF', // --color-bg-secondary
+            border: '1px solid #E5E7EB', // --color-border-subtle
+            borderRadius: '16px',
+            padding: '40px',
+            marginBottom: '40px',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.05)'
           }}>
             <div style={{
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              marginBottom: '20px'
+              marginBottom: '24px'
             }}>
-              <h3 style={{ margin: 0, color: '#ffffff' }}>Migration Progress</h3>
-              <span style={{ color: '#b3b3b3', fontSize: '16px' }}>{progress}%</span>
+              <h3 style={{ 
+                margin: 0, 
+                color: '#1D244F', // Deep Navy
+                fontSize: '24px',
+                fontWeight: '700'
+              }}>
+                🔄 Migration Progress
+              </h3>
+              <span style={{ 
+                color: '#00AFB9', // Vibrant Teal
+                fontSize: '20px',
+                fontWeight: '700'
+              }}>
+                {progress}%
+              </span>
             </div>
             
             <div style={{
-              backgroundColor: '#2a2a2a',
-              borderRadius: '10px',
-              height: '20px',
-              marginBottom: '20px',
-              overflow: 'hidden'
+              backgroundColor: '#F3F4F6', // Light gray background
+              borderRadius: '12px',
+              height: '24px',
+              marginBottom: '24px',
+              overflow: 'hidden',
+              position: 'relative'
             }}>
               <div style={{
-                backgroundColor: '#28a745',
+                backgroundColor: '#00AFB9', // Vibrant Teal
                 height: '100%',
                 width: `${progress}%`,
                 transition: 'width 0.5s ease',
-                borderRadius: '10px'
-              }}></div>
+                borderRadius: '12px',
+                animation: 'progressGlow 2s infinite',
+                position: 'relative'
+              }}>
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)',
+                  animation: 'shimmer 2s infinite'
+                }}></div>
+              </div>
             </div>
             
             {currentCampaign && (
               <div style={{
-                backgroundColor: '#2a2a2a',
-                padding: '15px',
-                borderRadius: '8px',
-                border: '1px solid #404040'
+                background: 'linear-gradient(135deg, #F0FDFA 0%, #E6F9F4 100%)', // Light teal gradient
+                padding: '20px',
+                borderRadius: '12px',
+                border: '1px solid #A7F3D0' // Light teal border
               }}>
-                <div style={{ marginBottom: '8px' }}>
-                  <strong style={{ color: '#ffffff' }}>Currently migrating:</strong>
+                <div style={{ marginBottom: '12px' }}>
+                  <strong style={{ 
+                    color: '#1D244F', // Deep Navy
+                    fontSize: '16px'
+                  }}>
+                    Currently migrating:
+                  </strong>
                 </div>
-                <div style={{ color: '#b3b3b3', marginBottom: '8px' }}>
+                <div style={{ 
+                  color: '#047857', // Dark green for good contrast
+                  marginBottom: '12px',
+                  fontSize: '18px',
+                  fontWeight: '600'
+                }}>
                   {currentCampaign.name} ({currentCampaign.type.toUpperCase()})
                 </div>
                 {currentStep && (
                   <div style={{ 
-                    color: '#28a745', 
-                    fontSize: '14px',
-                    fontStyle: 'italic'
+                    color: '#00AFB9', // Vibrant Teal
+                    fontSize: '15px',
+                    fontStyle: 'italic',
+                    fontWeight: '500'
                   }}>
                     {currentStep}
                   </div>
@@ -640,42 +747,48 @@ function MigrationProgressPage() {
         {/* Migration Logs */}
         {currentPhase === 'migrating' && logs.length > 0 && (
           <div style={{
-            backgroundColor: '#1e1e1e',
-            border: '1px solid #404040',
-            borderRadius: '12px',
-            padding: '20px',
-            marginBottom: '30px'
+            backgroundColor: '#FFFFFF', // --color-bg-secondary
+            border: '1px solid #E5E7EB', // --color-border-subtle
+            borderRadius: '16px',
+            padding: '30px',
+            marginBottom: '40px',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.05)'
           }}>
             <h3 style={{ 
-              margin: '0 0 15px 0', 
-              color: '#ffffff',
-              fontSize: '18px'
+              margin: '0 0 20px 0', 
+              color: '#1D244F', // Deep Navy
+              fontSize: '20px',
+              fontWeight: '700'
             }}>
               📋 Migration Logs
             </h3>
             <div style={{
-              backgroundColor: '#0d1117',
-              border: '1px solid #30363d',
-              borderRadius: '8px',
-              padding: '15px',
-              maxHeight: '300px',
+              backgroundColor: '#F9FAFB', // --color-bg-primary
+              border: '1px solid #E5E7EB', // --color-border-subtle
+              borderRadius: '12px',
+              padding: '20px',
+              maxHeight: '350px',
               overflowY: 'auto',
               fontFamily: 'Monaco, Consolas, "Lucida Console", monospace',
-              fontSize: '13px',
-              lineHeight: '1.4'
+              fontSize: '14px',
+              lineHeight: '1.5'
             }}>
               {logs.slice(-20).map((log) => (
                 <div 
                   key={log.id} 
                   style={{
-                    color: log.type === 'error' ? '#ff6b6b' : 
-                           log.type === 'success' ? '#51cf66' : 
-                           log.type === 'warning' ? '#ffd43b' : '#c9d1d9',
-                    marginBottom: '4px',
-                    whiteSpace: 'pre-wrap'
+                    color: log.type === 'error' ? '#D92D20' : // Danger Red
+                           log.type === 'success' ? '#008767' : // Success Green
+                           log.type === 'warning' ? '#F59E0B' : '#111827', // Warning Yellow or text-primary
+                    marginBottom: '6px',
+                    whiteSpace: 'pre-wrap',
+                    padding: '4px 0'
                   }}
                 >
-                  <span style={{ color: '#7d8590', fontSize: '11px' }}>
+                  <span style={{ 
+                    color: '#6B7280', // --color-text-secondary
+                    fontSize: '12px'
+                  }}>
                     [{log.timestamp}]
                   </span>{' '}
                   {log.message}
@@ -688,88 +801,129 @@ function MigrationProgressPage() {
         {/* Results Section */}
         {currentPhase === 'completed' && (
           <div style={{
-            backgroundColor: '#1e1e1e',
-            border: '1px solid #404040',
-            borderRadius: '12px',
-            padding: '30px',
-            marginBottom: '30px'
+            backgroundColor: '#FFFFFF', // --color-bg-secondary
+            border: '1px solid #E5E7EB', // --color-border-subtle
+            borderRadius: '16px',
+            padding: '40px',
+            marginBottom: '40px',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.05)'
           }}>
             <h3 style={{
-              margin: '0 0 20px 0',
-              color: '#ffffff',
-              fontSize: '24px'
+              margin: '0 0 30px 0',
+              color: '#1D244F', // Deep Navy
+              fontSize: '32px',
+              fontWeight: '700',
+              textAlign: 'center'
             }}>
               🎉 Migration Complete!
             </h3>
             
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '20px',
-              marginBottom: '30px'
+              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+              gap: '24px',
+              marginBottom: '40px'
             }}>
               <div style={{
-                backgroundColor: '#d4edda',
-                color: '#155724',
-                padding: '20px',
-                borderRadius: '8px',
-                textAlign: 'center'
+                background: 'linear-gradient(135deg, #E6F9F4 0%, #D1FAE5 100%)', // Success gradient
+                color: '#047857', // Dark green
+                padding: '24px',
+                borderRadius: '12px',
+                textAlign: 'center',
+                border: '1px solid #A7F3D0' // Light green border
               }}>
-                <div style={{ fontSize: '32px', marginBottom: '10px' }}>✅</div>
-                <div style={{ fontSize: '24px', fontWeight: 'bold' }}>
+                <div style={{ fontSize: '48px', marginBottom: '12px' }}>✅</div>
+                <div style={{ 
+                  fontSize: '32px', 
+                  fontWeight: 'bold',
+                  marginBottom: '8px',
+                  color: '#1D244F' // Deep Navy
+                }}>
                   {results.successful.length}
                 </div>
-                <div>Successful</div>
+                <div style={{ fontSize: '16px', fontWeight: '600' }}>Successful</div>
               </div>
               
               <div style={{
-                backgroundColor: '#f8d7da',
-                color: '#721c24',
-                padding: '20px',
-                borderRadius: '8px',
-                textAlign: 'center'
+                background: 'linear-gradient(135deg, #FEE4E2 0%, #FED7D3 100%)', // Danger gradient
+                color: '#B91C1C', // Dark red
+                padding: '24px',
+                borderRadius: '12px',
+                textAlign: 'center',
+                border: '1px solid #FECACA' // Light red border
               }}>
-                <div style={{ fontSize: '32px', marginBottom: '10px' }}>❌</div>
-                <div style={{ fontSize: '24px', fontWeight: 'bold' }}>
+                <div style={{ fontSize: '48px', marginBottom: '12px' }}>❌</div>
+                <div style={{ 
+                  fontSize: '32px', 
+                  fontWeight: 'bold',
+                  marginBottom: '8px',
+                  color: '#1D244F' // Deep Navy
+                }}>
                   {results.failed.length}
                 </div>
-                <div>Failed</div>
+                <div style={{ fontSize: '16px', fontWeight: '600' }}>Failed</div>
               </div>
               
               <div style={{
-                backgroundColor: '#d1ecf1',
-                color: '#0c5460',
-                padding: '20px',
-                borderRadius: '8px',
-                textAlign: 'center'
+                background: 'linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%)', // Info gradient
+                color: '#0369A1', // Dark blue
+                padding: '24px',
+                borderRadius: '12px',
+                textAlign: 'center',
+                border: '1px solid #BAE6FD' // Light blue border
               }}>
-                <div style={{ fontSize: '32px', marginBottom: '10px' }}>📊</div>
-                <div style={{ fontSize: '24px', fontWeight: 'bold' }}>
+                <div style={{ fontSize: '48px', marginBottom: '12px' }}>📊</div>
+                <div style={{ 
+                  fontSize: '32px', 
+                  fontWeight: 'bold',
+                  marginBottom: '8px',
+                  color: '#1D244F' // Deep Navy
+                }}>
                   {results.total}
                 </div>
-                <div>Total</div>
+                <div style={{ fontSize: '16px', fontWeight: '600' }}>Total</div>
               </div>
             </div>
 
             {/* Detailed Results */}
             {results.successful.length > 0 && (
-              <div style={{ marginBottom: '20px' }}>
-                <h4 style={{ color: '#28a745', marginBottom: '15px' }}>
+              <div style={{ marginBottom: '30px' }}>
+                <h4 style={{ 
+                  color: '#008767', // Success Green
+                  marginBottom: '20px',
+                  fontSize: '20px',
+                  fontWeight: '700'
+                }}>
                   ✅ Successfully Migrated
                 </h4>
-                <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                <div style={{ 
+                  maxHeight: '250px', 
+                  overflowY: 'auto',
+                  border: '1px solid #E5E7EB', // --color-border-subtle
+                  borderRadius: '12px',
+                  backgroundColor: '#F9FAFB' // --color-bg-primary
+                }}>
                   {results.successful.map((campaign, index) => (
                     <div key={index} style={{
-                      backgroundColor: '#2a2a2a',
-                      padding: '10px 15px',
-                      marginBottom: '8px',
-                      borderRadius: '6px',
-                      border: '1px solid #404040'
+                      backgroundColor: '#FFFFFF', // --color-bg-secondary
+                      padding: '16px 20px',
+                      marginBottom: index < results.successful.length - 1 ? '1px' : '0',
+                      borderRadius: index === 0 ? '12px 12px 0 0' : 
+                                   index === results.successful.length - 1 ? '0 0 12px 12px' : '0',
+                      borderLeft: '4px solid #008767' // Success Green accent
                     }}>
-                      <div style={{ color: '#ffffff', fontWeight: '500' }}>
+                      <div style={{ 
+                        color: '#1D244F', // Deep Navy
+                        fontWeight: '600',
+                        fontSize: '16px',
+                        marginBottom: '6px'
+                      }}>
                         {campaign.name}
                       </div>
-                      <div style={{ color: '#b3b3b3', fontSize: '12px' }}>
+                      <div style={{ 
+                        color: '#6B7280', // --color-text-secondary
+                        fontSize: '14px'
+                      }}>
                         {campaign.type.toUpperCase()} • Migrated at {new Date(campaign.migratedAt).toLocaleTimeString()}
                       </div>
                     </div>
@@ -779,24 +933,52 @@ function MigrationProgressPage() {
             )}
 
             {results.failed.length > 0 && (
-              <div style={{ marginBottom: '20px' }}>
-                <h4 style={{ color: '#dc3545', marginBottom: '15px' }}>
+              <div style={{ marginBottom: '30px' }}>
+                <h4 style={{ 
+                  color: '#D92D20', // Danger Red
+                  marginBottom: '20px',
+                  fontSize: '20px',
+                  fontWeight: '700'
+                }}>
                   ❌ Failed Migrations
                 </h4>
-                <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                <div style={{ 
+                  maxHeight: '250px', 
+                  overflowY: 'auto',
+                  border: '1px solid #E5E7EB', // --color-border-subtle
+                  borderRadius: '12px',
+                  backgroundColor: '#F9FAFB' // --color-bg-primary
+                }}>
                   {results.failed.map((campaign, index) => (
                     <div key={index} style={{
-                      backgroundColor: '#2a2a2a',
-                      padding: '10px 15px',
-                      marginBottom: '8px',
-                      borderRadius: '6px',
-                      border: '1px solid #404040'
+                      backgroundColor: '#FFFFFF', // --color-bg-secondary
+                      padding: '16px 20px',
+                      marginBottom: index < results.failed.length - 1 ? '1px' : '0',
+                      borderRadius: index === 0 ? '12px 12px 0 0' : 
+                                   index === results.failed.length - 1 ? '0 0 12px 12px' : '0',
+                      borderLeft: '4px solid #D92D20' // Danger Red accent
                     }}>
-                      <div style={{ color: '#ffffff', fontWeight: '500' }}>
+                      <div style={{ 
+                        color: '#1D244F', // Deep Navy
+                        fontWeight: '600',
+                        fontSize: '16px',
+                        marginBottom: '6px'
+                      }}>
                         {campaign.name}
                       </div>
-                      <div style={{ color: '#b3b3b3', fontSize: '12px' }}>
-                        {campaign.type.toUpperCase()} • Error: {campaign.error}
+                      <div style={{ 
+                        color: '#6B7280', // --color-text-secondary
+                        fontSize: '14px',
+                        marginBottom: '4px'
+                      }}>
+                        {campaign.type.toUpperCase()} • Failed at {new Date(campaign.failedAt).toLocaleTimeString()}
+                      </div>
+                      <div style={{ 
+                        color: '#D92D20', // Danger Red
+                        fontSize: '13px',
+                        fontStyle: 'italic'
+                      }}>
+                        Error: {campaign.error}
                       </div>
                     </div>
                   ))}
@@ -807,22 +989,37 @@ function MigrationProgressPage() {
             {/* Action Buttons */}
             <div style={{
               display: 'flex',
-              gap: '15px',
+              gap: '20px',
               justifyContent: 'center',
               flexWrap: 'wrap',
-              marginBottom: '30px'
+              marginBottom: '40px',
+              paddingTop: '20px',
+              borderTop: '1px solid #E5E7EB' // --color-border-subtle
             }}>
               <button
                 onClick={handleBackToCampaigns}
                 style={{
-                  backgroundColor: '#007bff',
-                  color: '#ffffff',
+                  backgroundColor: '#00AFB9', // Vibrant Teal
+                  color: '#FFFFFF',
                   border: 'none',
-                  padding: '12px 24px',
-                  borderRadius: '6px',
+                  padding: '16px 32px',
+                  borderRadius: '8px',
                   cursor: 'pointer',
                   fontSize: '16px',
-                  fontWeight: '500'
+                  fontWeight: '600',
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 4px 12px rgba(0, 175, 185, 0.3)',
+                  minWidth: '180px'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#0891A5';
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 6px 20px rgba(0, 175, 185, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = '#00AFB9';
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 12px rgba(0, 175, 185, 0.3)';
                 }}
               >
                 📋 Back to Campaigns
@@ -832,17 +1029,30 @@ function MigrationProgressPage() {
                 <button
                   onClick={handleRetryFailed}
                   style={{
-                    backgroundColor: '#ffc107',
-                    color: '#000000',
+                    backgroundColor: '#F59E0B', // Warning Yellow
+                    color: '#FFFFFF',
                     border: 'none',
-                    padding: '12px 24px',
-                    borderRadius: '6px',
+                    padding: '16px 32px',
+                    borderRadius: '8px',
                     cursor: 'pointer',
                     fontSize: '16px',
-                    fontWeight: '500'
+                    fontWeight: '600',
+                    transition: 'all 0.2s ease',
+                    boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)',
+                    minWidth: '180px'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = '#D97706';
+                    e.target.style.transform = 'translateY(-2px)';
+                    e.target.style.boxShadow = '0 6px 20px rgba(245, 158, 11, 0.4)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = '#F59E0B';
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = '0 4px 12px rgba(245, 158, 11, 0.3)';
                   }}
                 >
-                  🔄 Retry Failed
+                  🔄 Retry Failed ({results.failed.length})
                 </button>
               )}
             </div>
@@ -851,35 +1061,40 @@ function MigrationProgressPage() {
             {logs.length > 0 && (
               <div>
                 <h4 style={{ 
-                  color: '#ffffff', 
-                  marginBottom: '15px',
-                  fontSize: '18px'
+                  color: '#1D244F', // Deep Navy
+                  marginBottom: '20px',
+                  fontSize: '20px',
+                  fontWeight: '700'
                 }}>
-                  📋 Migration Logs
+                  📋 Complete Migration Logs
                 </h4>
                 <div style={{
-                  backgroundColor: '#0d1117',
-                  border: '1px solid #30363d',
-                  borderRadius: '8px',
-                  padding: '15px',
-                  maxHeight: '300px',
+                  backgroundColor: '#F9FAFB', // --color-bg-primary
+                  border: '1px solid #E5E7EB', // --color-border-subtle
+                  borderRadius: '12px',
+                  padding: '20px',
+                  maxHeight: '350px',
                   overflowY: 'auto',
                   fontFamily: 'Monaco, Consolas, "Lucida Console", monospace',
-                  fontSize: '13px',
-                  lineHeight: '1.4'
+                  fontSize: '14px',
+                  lineHeight: '1.5'
                 }}>
                   {logs.map((log) => (
                     <div 
                       key={log.id} 
                       style={{
-                        color: log.type === 'error' ? '#ff6b6b' : 
-                               log.type === 'success' ? '#51cf66' : 
-                               log.type === 'warning' ? '#ffd43b' : '#c9d1d9',
-                        marginBottom: '4px',
-                        whiteSpace: 'pre-wrap'
+                        color: log.type === 'error' ? '#D92D20' : // Danger Red
+                               log.type === 'success' ? '#008767' : // Success Green
+                               log.type === 'warning' ? '#F59E0B' : '#111827', // Warning Yellow or text-primary
+                        marginBottom: '6px',
+                        whiteSpace: 'pre-wrap',
+                        padding: '4px 0'
                       }}
                     >
-                      <span style={{ color: '#7d8590', fontSize: '11px' }}>
+                      <span style={{ 
+                        color: '#6B7280', // --color-text-secondary
+                        fontSize: '12px'
+                      }}>
                         [{log.timestamp}]
                       </span>{' '}
                       {log.message}
@@ -893,14 +1108,19 @@ function MigrationProgressPage() {
 
         {error && (
           <div style={{
-            backgroundColor: '#f8d7da',
-            color: '#721c24',
-            padding: '20px',
-            borderRadius: '8px',
-            marginBottom: '20px',
-            border: '1px solid #f5c6cb'
+            backgroundColor: '#FEE4E2', // Danger Red BG
+            color: '#D92D20', // Danger Red text
+            padding: '24px 30px',
+            borderRadius: '12px',
+            marginBottom: '30px',
+            border: '1px solid #FECACA', // Light danger border
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            fontSize: '16px'
           }}>
-            ⚠️ {error}
+            <span style={{ fontSize: '24px' }}>⚠️</span>
+            <span>{error}</span>
           </div>
         )}
       </div>
