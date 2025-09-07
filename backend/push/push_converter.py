@@ -458,24 +458,130 @@ class PushCampaignMigrator: #
         ios_actions = [a for a in messaging_actions if a.get("message_type") == "iosPush"] #
         web_actions = [a for a in messaging_actions if a.get("message_type") == "webPush"] #
         active_platforms = [] #
+        
+        # Handle Android variations
         if android_actions: #
-            campaign_data_dict["ANDROID"].update(self._map_android_push(android_actions[0])) #
             active_platforms.append("ANDROID") #
+            if len(android_actions) == 1:
+                # Single variation - use default ANDROID key
+                campaign_data_dict["ANDROID"].update(self._map_android_push(android_actions[0])) #
+            else:
+                # Multiple variations - create ANDROID_1, ANDROID_2, etc.
+                # Remove the default ANDROID key first
+                del campaign_data_dict["ANDROID"]
+                # Clear the default var_p entry for Android
+                campaign_data_dict["var_p"]["ANDROID"] = {}
+                
+                variation_percentage = 100 // len(android_actions)
+                remainder = 100 % len(android_actions)
+                
+                for i, action in enumerate(android_actions, 1):
+                    variation_key = f"ANDROID_{i}"
+                    # Create variation config based on base ANDROID config
+                    variation_config = {
+                        "sendWithPriority": "normal", 
+                        "channel_id": "moe_default_channel", 
+                        "msgtitle": "", 
+                        "msg": "", 
+                        "actionArray": [{"type": "deeplinking", "deeplinkingURL": ""}], 
+                        "widgetArray": []
+                    }
+                    variation_config.update(self._map_android_push(action))
+                    campaign_data_dict[variation_key] = variation_config
+                    
+                    # Set percentage (give remainder to last variation)
+                    percentage = variation_percentage + (remainder if i == len(android_actions) else 0)
+                    campaign_data_dict["var_p"]["ANDROID"][str(i)] = percentage
+        
+        # Handle iOS variations
         if ios_actions: #
-            campaign_data_dict["IOS"].update(self._map_ios_push(ios_actions[0])) #
             active_platforms.append("IOS") #
+            if len(ios_actions) == 1:
+                # Single variation - use default IOS key
+                campaign_data_dict["IOS"].update(self._map_ios_push(ios_actions[0])) #
+            else:
+                # Multiple variations - create IOS_1, IOS_2, etc.
+                # Remove the default IOS key first
+                del campaign_data_dict["IOS"]
+                # Clear the default var_p entry for iOS
+                campaign_data_dict["var_p"]["IOS"] = {}
+                
+                variation_percentage = 100 // len(ios_actions)
+                remainder = 100 % len(ios_actions)
+                
+                for i, action in enumerate(ios_actions, 1):
+                    variation_key = f"IOS_{i}"
+                    # Create variation config based on base IOS config
+                    variation_config = {
+                        "interruption-level": "active", 
+                        "title": "", 
+                        "body": "", 
+                        "actionArray": [{"type": "deeplinking", "deeplinkingURL": ""}], 
+                        "widgetArray": []
+                    }
+                    variation_config.update(self._map_ios_push(action))
+                    campaign_data_dict[variation_key] = variation_config
+                    
+                    # Set percentage (give remainder to last variation)
+                    percentage = variation_percentage + (remainder if i == len(ios_actions) else 0)
+                    campaign_data_dict["var_p"]["IOS"][str(i)] = percentage
+        
+        # Handle Web variations  
         if web_actions: #
-            campaign_data_dict["WEB"].update(self._map_web_push(web_actions[0])) #
             active_platforms.append("WEB") #
+            if len(web_actions) == 1:
+                # Single variation - use default WEB key
+                campaign_data_dict["WEB"].update(self._map_web_push(web_actions[0])) #
+            else:
+                # Multiple variations - create WEB_1, WEB_2, etc.
+                # Remove the default WEB key first
+                del campaign_data_dict["WEB"]
+                # Clear the default var_p entry for Web
+                campaign_data_dict["var_p"]["WEB"] = {}
+                
+                variation_percentage = 100 // len(web_actions)
+                remainder = 100 % len(web_actions)
+                
+                for i, action in enumerate(web_actions, 1):
+                    variation_key = f"WEB_{i}"
+                    # Create variation config based on base WEB config
+                    variation_config = {
+                        "msgtitle": "", 
+                        "msg": "", 
+                        "redirectURL": "", 
+                        "widgetArray": []
+                    }
+                    variation_config.update(self._map_web_push(action))
+                    campaign_data_dict[variation_key] = variation_config
+                    
+                    # Set percentage (give remainder to last variation)
+                    percentage = variation_percentage + (remainder if i == len(web_actions) else 0)
+                    campaign_data_dict["var_p"]["WEB"][str(i)] = percentage
+        # Clean up platforms and update selectedPlatform
         if active_platforms: #
             campaign_data_dict["selectedPlatform"] = active_platforms
             campaign_data_dict["selectedPlatformName"] = active_platforms #
-            # Define all possible platforms
-            all_platforms = ["ANDROID", "IOS", "WEB"]
-            # Iterate and remove any platform that is NOT active
-            for platform in all_platforms:
-                if platform not in active_platforms:
+        else:
+            # No active platforms - remove all platform data
+            campaign_data_dict["selectedPlatform"] = []
+            campaign_data_dict["selectedPlatformName"] = []
+        
+        # Define all possible platforms
+        all_platforms = ["ANDROID", "IOS", "WEB"]
+        # Iterate and remove any platform that is NOT active
+        for platform in all_platforms:
+            if platform not in active_platforms:
+                # Remove base platform key
+                if platform in campaign_data_dict:
                     del campaign_data_dict[platform]
+                # Remove var_p entry for this platform
+                if platform in campaign_data_dict["var_p"]:
+                    del campaign_data_dict["var_p"][platform]
+                # Remove any variation keys for this platform (e.g., ANDROID_1, ANDROID_2)
+                variation_keys_to_remove = [key for key in campaign_data_dict.keys() 
+                                          if key.startswith(f"{platform}_")]
+                for key in variation_keys_to_remove:
+                    del campaign_data_dict[key]
 
         return payload
 

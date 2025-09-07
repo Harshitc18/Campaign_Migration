@@ -112,6 +112,9 @@ class SmsCampaignMigrator:
             "var_p": {"sms": {"1": 100, "9": 0}},
             "message_html": "Default SMS message.", "message": "Default SMS message.",
             "sms_dlt_template_id": "YOUR_DLT_TEMPLATE_ID_HERE",
+            "timezone": [self.config['timezone']['name'], self.config['timezone']['offset']],
+            "timezoneName": self.config['timezone']['name'],
+            "bypass_dnd": False,
         }}
 
     def _fetch_default_sender_details(self) -> Dict[str, Any]:
@@ -152,16 +155,118 @@ class SmsCampaignMigrator:
         }
 
     def _map_braze_schedule_to_moengage(self, campaign_data: Dict[str, Any]) -> Dict[str, Any]:
-        # ... (This method remains unchanged)
+        """
+        Comprehensive mapping of Braze scheduling types to MoEngage for SMS campaigns.
+        Supports: action-based (triggered), time-based (scheduled), and recurring campaigns.
+        """
         updates = {}
         schedule_type = campaign_data.get("schedule_type")
-        start_ts = campaign_data.get("schedule_data", {}).get("start_date_time")
-        start_dt = datetime.fromtimestamp(start_ts) if start_ts else datetime.now()
-        if schedule_type == "time_based" and not campaign_data.get("schedule_data", {}).get("recurring"):
+        timezone_name = self.config['timezone']['name']
+        timezone_tuple = [timezone_name, self.config['timezone']['offset']]
+        
+        if schedule_type == "action_based":
+            # Action-based/Triggered campaigns
+            updates['campaignType'] = "sms"  # Keep SMS type
+            
+            trigger_data = campaign_data.get("trigger_schedule_data", {})
+            delay_sec = trigger_data.get('trigger_delay_in_seconds', 0)
+            
+            if delay_sec > 0:
+                updates['delivery'] = "trigger"
+                updates['triggerDelayType'] = "delay"
+                updates['minDelaySmartTrig'] = str(round(delay_sec / 60))  # Convert to minutes
+            else:
+                updates['delivery'] = "soon"
+                updates['triggerDelayType'] = "asap"
+            
+            # Handle trigger start and end times
+            start_ts = trigger_data.get("start_time")
+            end_ts = trigger_data.get("end_time")
+            
+            if start_ts:
+                start_dt = datetime.fromtimestamp(start_ts)
+                updates['laterDate'] = start_dt.strftime("%m/%d/%Y")
+                updates['time'] = start_dt.strftime("%-I:%M %p").lower()
+            
+            # Set expiry date
+            end_dt = datetime.fromtimestamp(end_ts) if end_ts else (
+                datetime.fromtimestamp(start_ts) + timedelta(days=365) if start_ts 
+                else datetime.now() + timedelta(days=365)
+            )
+            updates['stExpiryDate'] = end_dt.strftime("%m/%d/%Y")
+            updates['stExpiryTime'] = end_dt.strftime("%-I:%M %p").lower()
+            
+        elif schedule_type == "time_based":
+            # Time-based campaigns (scheduled or recurring)
+            updates['campaignType'] = "sms"  # Keep SMS type
+            schedule_data = campaign_data.get("schedule_data", {})
+            is_recurring = schedule_data.get("recurring", False)
+            start_ts = schedule_data.get("start_date_time")
+            start_dt = datetime.fromtimestamp(start_ts) if start_ts else datetime.now()
+            
+            if is_recurring:
+                # Recurring campaigns
+                updates['delivery'] = "periodic"
+                updates['dt'] = start_dt.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+                updates['periodicStartDate'] = start_dt.strftime("%m/%d/%Y")
+                updates['periodicTime'] = start_dt.strftime("%-I:%M %p").lower()
+                updates['periodicTimezone'] = timezone_tuple
+                
+                # Set default expiry (1 year from start)
+                end_dt = start_dt + timedelta(days=365)
+                updates['periodicExpireDate'] = end_dt.strftime("%m/%d/%Y")
+                updates['periodicExpireTime'] = end_dt.strftime("%-I:%M %p").lower()
+                
+                # Build schedule_info for recurring patterns
+                schedule_info = {
+                    "daily_freq_duration": 0,
+                    "weekly_freq_duration": 0, 
+                    "monthly_freq_duration": 0,
+                    "selected_weekdays": [],
+                    "month_view_type": "MONTH_VIEW",
+                    "days_of_month": [],
+                    "weeks_of_month": {},
+                    "should_sent_on_last_day": False,
+                    "expiry_type": "ON_DATE",
+                    "max_instance_count": 0
+                }
+                
+                frequency = schedule_data.get('frequency', '').upper()
+                repeat_interval = schedule_data.get('repeat_interval', 1)
+                schedule_info['recur_type'] = frequency
+                
+                if frequency == "DAILY":
+                    schedule_info['daily_freq_duration'] = repeat_interval
+                elif frequency == "WEEKLY":
+                    schedule_info['weekly_freq_duration'] = repeat_interval
+                    # Map Braze weekdays to MoEngage format
+                    weekday_map = {
+                        'monday': 0, 'tuesday': 1, 'wednesday': 2, 'thursday': 3,
+                        'friday': 4, 'saturday': 5, 'sunday': 6
+                    }
+                    braze_weekdays = schedule_data.get('weekdays', {})
+                    schedule_info['selected_weekdays'] = [
+                        weekday_map[day] for day, active in braze_weekdays.items() if active
+                    ]
+                elif frequency == "MONTHLY":
+                    schedule_info['monthly_freq_duration'] = repeat_interval
+                    schedule_info['days_of_month'] = [start_dt.day]
+                
+                updates['schedule_info'] = schedule_info
+                
+            else:
+                # One-time scheduled campaigns
+                updates['delivery'] = "later"
+                updates['dt'] = start_dt.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+                updates['laterDate'] = start_dt.strftime("%m/%d/%Y")
+                updates['time'] = start_dt.strftime("%-I:%M %p").lower()
+                
+        else:
+            # Default/immediate delivery or unknown schedule type
             updates['delivery'] = "later"
-            updates['laterDate'] = start_dt.strftime("%m/%d/%Y")
-            updates['time'] = start_dt.strftime("%-I:%M %p").lower()
-        # Add other schedule types (recurring, triggered) here if needed
+            updates['laterDate'] = datetime.now().strftime("%m/%d/%Y")
+            updates['time'] = datetime.now().strftime("%-I:%M %p").lower()
+        
         return updates
 
     def _map_braze_conversions_to_moengage(self, braze_conversions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -193,20 +298,76 @@ class SmsCampaignMigrator:
 
         # Step 4: Map the rest of the Braze campaign data
         camp_data['campaignName'] = campaign_data.get('campaign_name', 'Default SMS Campaign Name')
-        camp_data.update(self._map_braze_schedule_to_moengage(campaign_data))
+        schedule_updates = self._map_braze_schedule_to_moengage(campaign_data)
+        camp_data.update(schedule_updates)
+        
+        # Step 5: Handle triggered campaign segmentation
+        if campaign_data.get("schedule_type") == "action_based":
+            camp_data['new_segmentation_data'] = {
+                "included_filters": {
+                    "filter_operator": "and",
+                    "filters": [
+                        {
+                            "filter_type": "actions",
+                            "action_name": "MOE_APP_OPENED",
+                            "execution": {
+                                "type": "atleast",
+                                "count": 1
+                            },
+                            "executed": True,
+                            "attributes": {
+                                "filter_operator": "and",
+                                "filters": []
+                            }
+                        }
+                    ]
+                }
+            }
+        
         braze_conversions = campaign_data.get('conversion_behaviors', [])
         camp_data['conversion']['conversion_goals'] = self._map_braze_conversions_to_moengage(braze_conversions)
 
+        # Handle SMS variations (single or multiple)
         regular_variations = [v for v in campaign_data.get('messaging_actions', []) if v.get('message_type') == 'sms' and not v.get('is_control')]
         if not regular_variations:
             raise ValueError("No regular SMS variations found in the Braze campaign data.")
-            
-        sms_message = regular_variations[0]
-        sms_body = sms_message.get("body", "")
-        processed_body = convert_liquid_to_jinja(sms_body)
         
-        camp_data["message_html"] = processed_body
-        camp_data["message"] = processed_body
+        if len(regular_variations) == 1:
+            # Single variation - use existing message fields
+            sms_message = regular_variations[0]
+            sms_body = sms_message.get("body", "")
+            processed_body = convert_liquid_to_jinja(sms_body)
+            camp_data["message_html"] = processed_body
+            camp_data["message"] = processed_body
+        else:
+            # Multiple variations - update var_p and create variation-specific messages
+            variation_percentage = 100 // len(regular_variations)
+            remainder = 100 % len(regular_variations)
+            
+            # Clear the default var_p for SMS and set up for multiple variations
+            camp_data["var_p"]["sms"] = {}
+            
+            # Create numbered variations and update var_p percentages
+            for i, sms_message in enumerate(regular_variations, 1):
+                sms_body = sms_message.get("body", "")
+                processed_body = convert_liquid_to_jinja(sms_body)
+                
+                # Set percentage (give remainder to last variation)
+                percentage = variation_percentage + (remainder if i == len(regular_variations) else 0)
+                camp_data["var_p"]["sms"][str(i)] = percentage
+                
+                # Store variation-specific messages
+                if i == 1:
+                    # First variation uses the main message fields
+                    camp_data["message_html"] = processed_body
+                    camp_data["message"] = processed_body
+                else:
+                    # Additional variations stored as message_html_2, message_2, etc.
+                    camp_data[f"message_html_{i}"] = processed_body
+                    camp_data[f"message_{i}"] = processed_body
+            
+            # Set control percentage to 0 for multi-variation
+            camp_data["var_p"]["sms"]["9"] = 0
         
         return payload
         
