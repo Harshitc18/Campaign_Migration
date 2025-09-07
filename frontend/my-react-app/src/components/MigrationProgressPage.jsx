@@ -330,9 +330,27 @@ function MigrationProgressPage() {
         console.log(`✅ Migration successful for ${campaignType} campaign`);
         addLog(`✅ MoEngage API responded with success`, 'success');
         
-        // Log additional details from MoEngage response
-        if (response.data.moengage_response) {
-          addLog(`📋 Draft ID: ${response.data.moengage_response.campaign_id || 'N/A'}`, 'info');
+        // Handle different response structures from different services
+        let draftId = 'N/A';
+        let draftCreated = true;
+        
+        if (campaignType.toLowerCase() === 'push' || campaignType.toLowerCase() === 'multi') {
+          // Push service response structure
+          draftCreated = response.data.draft_created !== false;
+          if (response.data.moengage_response?.campaign_id) {
+            draftId = response.data.moengage_response.campaign_id;
+          }
+        } else {
+          // SMS and Email service response structure (MigrationSuccessResponse)
+          if (response.data.moengage_response?.campaign_id) {
+            draftId = response.data.moengage_response.campaign_id;
+          }
+        }
+        
+        if (draftCreated && draftId !== 'N/A') {
+          addLog(`📋 Draft ID: ${draftId}`, 'info');
+        } else if (!draftCreated) {
+          addLog(`⚠️ Payload converted but draft creation may have failed`, 'warning');
         }
         
         return response.data;
