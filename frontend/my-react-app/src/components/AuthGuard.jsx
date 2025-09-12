@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { AUTH_CONFIG } from '../config/authConfig';
 
 const AuthGuard = ({ children }) => {
@@ -6,6 +7,9 @@ const AuthGuard = ({ children }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPlatformDropdown, setShowPlatformDropdown] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Check if user is already authenticated on component mount
   useEffect(() => {
@@ -66,6 +70,50 @@ const AuthGuard = ({ children }) => {
     localStorage.removeItem('campaignMigrationAuthTime');
     setPassword('');
   };
+
+  const handleTitleClick = () => {
+    navigate('/');
+  };
+
+  const handlePlatformSelect = (platform) => {
+    setShowPlatformDropdown(false);
+    switch(platform) {
+      case 'campaigns':
+        navigate('/campaigns');
+        break;
+      case 'content-blocks':
+        navigate('/content-blocks');
+        break;
+      case 'flows':
+        // Disabled - do nothing
+        break;
+      default:
+        break;
+    }
+  };
+
+  const getCurrentPlatform = () => {
+    if (location.pathname.includes('/campaigns') || location.pathname.includes('/campaign/')) {
+      return 'Campaigns';
+    } else if (location.pathname.includes('/content-blocks')) {
+      return 'Content Blocks';
+    }
+    return 'Select Platform';
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showPlatformDropdown && !event.target.closest('.platform-dropdown')) {
+        setShowPlatformDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showPlatformDropdown]);
 
   // If not authenticated, show login form
   if (!isAuthenticated) {
@@ -441,6 +489,119 @@ const AuthGuard = ({ children }) => {
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .app-title h2:hover {
+          transform: translateY(-1px);
+          filter: brightness(1.1);
+        }
+
+        .platform-dropdown {
+          position: relative;
+          display: inline-block;
+        }
+
+        .platform-button {
+          background: transparent;
+          color: #334155;
+          border: none;
+          padding: 8px 12px;
+          font-size: 14px;
+          font-weight: 500;
+          font-family: 'Inter', sans-serif;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          outline: none;
+          min-width: 140px;
+          justify-content: space-between;
+        }
+
+        .platform-button:hover {
+          color: #00C4D6;
+        }
+
+        .platform-button.active {
+          color: #00C4D6;
+        }
+
+        .dropdown-arrow {
+          transition: transform 0.2s ease;
+        }
+
+        .dropdown-arrow.open {
+          transform: rotate(180deg);
+        }
+
+        .platform-menu {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          background: #FFFFFF;
+          border: 1px solid #E2E8F0;
+          border-radius: 4px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          z-index: 1000;
+          margin-top: 2px;
+          overflow: hidden;
+          animation: dropdownSlide 0.2s ease-out;
+        }
+
+        @keyframes dropdownSlide {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .platform-item {
+          padding: 10px 12px;
+          color: #334155;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          font-size: 14px;
+          font-weight: 400;
+          border-bottom: 1px solid #F1F5F9;
+        }
+
+        .platform-item:last-child {
+          border-bottom: none;
+        }
+
+        .platform-item:hover:not(.disabled) {
+          background: #F8FAFC;
+          color: #00C4D6;
+        }
+
+        .platform-item.active {
+          background: #F8FAFC;
+          color: #00C4D6;
+          font-weight: 500;
+        }
+
+        .platform-item.disabled {
+          color: #94A3B8;
+          cursor: not-allowed;
+          opacity: 0.6;
+        }
+
+        .platform-item.disabled:hover {
+          background: none;
+        }
+
+        .header-actions {
+          display: flex;
+          align-items: center;
+          gap: 16px;
         }
 
         .auth-status {
@@ -545,6 +706,12 @@ const AuthGuard = ({ children }) => {
             position: static;
           }
           
+          .header-actions {
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+          }
+          
           .app-title {
             flex-direction: column;
             gap: 8px;
@@ -555,9 +722,18 @@ const AuthGuard = ({ children }) => {
             font-size: 22px;
           }
 
+          .platform-dropdown {
+            width: 100%;
+          }
+
+          .platform-button {
+            width: 100%;
+          }
+
           .logout-button {
             padding: 8px 16px;
             font-size: 13px;
+            width: 100%;
           }
         }
 
@@ -579,12 +755,45 @@ const AuthGuard = ({ children }) => {
       <div className="authenticated-app">
         <div className="app-header">
           <div className="app-title">
-            <h2>🚀 {AUTH_CONFIG.APP_TITLE}</h2>
+            <h2 onClick={handleTitleClick}>🚀 {AUTH_CONFIG.APP_TITLE}</h2>
             <span className="auth-status">Authenticated</span>
           </div>
-          <button onClick={handleLogout} className="logout-button">
-            <span>🚪 Logout</span>
-          </button>
+          
+          <div className="header-actions">
+            <div className="platform-dropdown">
+              <button 
+                className={`platform-button ${showPlatformDropdown ? 'active' : ''}`}
+                onClick={() => setShowPlatformDropdown(!showPlatformDropdown)}
+              >
+                <span>{getCurrentPlatform()}</span>
+                <span className={`dropdown-arrow ${showPlatformDropdown ? 'open' : ''}`}>▼</span>
+              </button>
+              
+              {showPlatformDropdown && (
+                <div className="platform-menu">
+                  <div 
+                    className={`platform-item ${getCurrentPlatform() === 'Campaigns' ? 'active' : ''}`}
+                    onClick={() => handlePlatformSelect('campaigns')}
+                  >
+                    Campaigns
+                  </div>
+                  <div 
+                    className={`platform-item ${getCurrentPlatform() === 'Content Blocks' ? 'active' : ''}`}
+                    onClick={() => handlePlatformSelect('content-blocks')}
+                  >
+                    Content Blocks
+                  </div>
+                  <div className="platform-item disabled">
+                    Flows (Coming Soon)
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <button onClick={handleLogout} className="logout-button">
+              <span>🚪 Logout</span>
+            </button>
+          </div>
         </div>
         <div className="app-content">
           {children}
