@@ -13,7 +13,7 @@ export const AUTH_CONFIG = {
   REMEMBER_AUTH: true,
   
   // Application title
-  APP_TITLE: 'Campaign Migration Tool',
+  APP_TITLE: 'MoEngage Migration Tool',
   
   // Optional: You can add multiple passwords for different users
   // MULTIPLE_PASSWORDS: [

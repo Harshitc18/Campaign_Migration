@@ -20,8 +20,11 @@ function MigrationProgressPage() {
   useEffect(() => {
     // Load migration data from localStorage
     const data = localStorage.getItem('migrationData');
+    console.log('🔍 Checking localStorage for migrationData:', data ? 'Found' : 'Not found');
+    
     if (!data) {
-      console.log('No migration data found, redirecting to campaigns');
+      console.log('❌ No migration data found in localStorage, redirecting to campaigns');
+      console.log('🔍 All localStorage keys:', Object.keys(localStorage));
       setError('No migration data found. Redirecting to campaigns...');
       setTimeout(() => navigate('/campaigns'), 2000);
       return;
@@ -29,21 +32,26 @@ function MigrationProgressPage() {
 
     try {
       const parsedData = JSON.parse(data);
-      console.log('Migration data loaded:', parsedData);
+      console.log('✅ Migration data loaded successfully:', parsedData);
       
       // Validate migration data structure
+      console.log('🔍 Validating migration data structure...');
       if (!parsedData.campaigns || !Array.isArray(parsedData.campaigns) || parsedData.campaigns.length === 0) {
+        console.log('❌ Invalid campaigns data:', parsedData.campaigns);
         throw new Error('Invalid migration data: no campaigns found');
       }
       
       if (!parsedData.brazeCredentials) {
+        console.log('❌ Missing Braze credentials');
         throw new Error('Invalid migration data: Braze credentials are missing');
       }
       
       if (!parsedData.moEngageCredentials) {
+        console.log('❌ Missing MoEngage credentials');
         throw new Error('Invalid migration data: MoEngage credentials are missing');
       }
 
+      console.log('✅ Migration data validation passed');
       setMigrationData(parsedData);
       setResults(prev => ({ ...prev, total: parsedData.campaigns.length }));
       addLog(`🚀 Migration data loaded successfully`, 'success');
@@ -53,28 +61,42 @@ function MigrationProgressPage() {
       const migrationStatus = localStorage.getItem('migrationStatus');
       const currentMigrationId = JSON.stringify(parsedData.campaigns.map(c => c.id).sort());
       
+      console.log('🔍 Checking migration status...');
+      console.log('Current migration ID:', currentMigrationId);
+      console.log('Stored migration status:', migrationStatus);
+      
       if (migrationStatus) {
         try {
           const status = JSON.parse(migrationStatus);
+          console.log('Parsed migration status:', status);
           if (status.completed && status.migrationId === currentMigrationId) {
+            console.log('⚠️ Migration already completed for these campaigns, redirecting...');
             addLog(`✅ Migration already completed for these campaigns`, 'info');
             addLog(`🔄 Redirecting back to campaigns...`, 'info');
             setTimeout(() => navigate('/campaigns'), 2000);
             return;
+          } else {
+            console.log('✅ Migration status check passed - different campaigns or not completed');
           }
         } catch (e) {
+          console.log('⚠️ Invalid stored migration status, removing and continuing:', e);
           // Invalid stored status, continue with migration
           localStorage.removeItem('migrationStatus');
         }
+      } else {
+        console.log('✅ No previous migration status found');
       }
       
       // Start migration process after a short delay
+      console.log('🚀 Starting migration in 2 seconds...');
       setTimeout(() => {
         startMigration(parsedData);
       }, 2000);
       
     } catch (err) {
       const errorMessage = `Migration data error: ${err.message}`;
+      console.log('❌ Migration data error:', err);
+      console.log('❌ Raw localStorage data:', data);
       setError(errorMessage);
       addLog(`❌ ${errorMessage}`, 'error');
       console.error('Migration data error:', err);
@@ -233,14 +255,17 @@ function MigrationProgressPage() {
       throw new Error('Braze credentials are missing. Please ensure you are logged in.');
     }
     
-    if (!brazeCredentials.dashboard_url || !brazeCredentials.session_id || !brazeCredentials.app_group_id) {
-      throw new Error('Incomplete Braze credentials. Missing dashboard_url, session_id, or app_group_id.');
+    if (!brazeCredentials.dashboard_number || !brazeCredentials.session_id || !brazeCredentials.app_group_id) {
+      throw new Error('Incomplete Braze credentials. Missing dashboard_number, session_id, or app_group_id.');
     }
+    
+    // Construct dashboard URL from dashboard number
+    const dashboardUrl = `https://dashboard-${String(brazeCredentials.dashboard_number || 9).padStart(2, '0')}.braze.com`;
     
     try {
       const response = await axios.get(`http://localhost:8082/campaigns/${campaignId}/`, {
         headers: {
-          'X-Dashboard-Url': brazeCredentials.dashboard_url,
+          'X-Dashboard-Url': dashboardUrl,
           'X-Session-Id': brazeCredentials.session_id,
           'X-App-Group-Id': brazeCredentials.app_group_id,
           'Content-Type': 'application/json'
@@ -270,7 +295,7 @@ function MigrationProgressPage() {
     switch (campaignType.toLowerCase()) {
       case 'email':
         endpoint = 'http://localhost:8080/v1/migrate-campaign';
-        addLog(`📧 Using Email Migration Service (Port 8080)`, 'info');
+        addLog(`📧 Using Email Migration Service`, 'info');
         payload = {
           campaign: campaignDetails.campaign || campaignDetails,
           moengage_credentials: {
@@ -285,7 +310,7 @@ function MigrationProgressPage() {
       case 'push':
       case 'multi':
         endpoint = 'http://localhost:8081/v1/migrate-push-campaign';
-        addLog(`📱 Using Push Migration Service (Port 8081)`, 'info');
+        addLog(`📱 Using Push Migration Service`, 'info');
         payload = {
           campaign: campaignDetails.campaign || campaignDetails,
           moengage_credentials: {
@@ -299,7 +324,7 @@ function MigrationProgressPage() {
         
       case 'sms':
         endpoint = 'http://localhost:8083/v1/migrate-sms-campaign';
-        addLog(`💬 Using SMS Migration Service (Port 8083)`, 'info');
+        addLog(`💬 Using SMS Migration Service`, 'info');
         payload = {
           campaign: campaignDetails.campaign || campaignDetails,
           moengage_credentials: {

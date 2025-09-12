@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 function LoginPage() {
   // State to hold the form input values
-  const [dashboardUrl, setDashboardUrl] = useState('https://dashboard-09.braze.com');
+  const [dashboardNumber, setDashboardNumber] = useState(9);
   const [sessionId, setSessionId] = useState('');
   const [appGroupId, setAppGroupId] = useState('');
 
@@ -22,7 +22,7 @@ function LoginPage() {
     if (storedCredentials) {
       try {
         const credentials = JSON.parse(storedCredentials);
-        setDashboardUrl(credentials.dashboard_url || 'https://dashboard-09.braze.com');
+        setDashboardNumber(credentials.dashboard_number || 9);
         setSessionId(credentials.session_id || '');
         setAppGroupId(credentials.app_group_id || '');
         setHasStoredCredentials(true);
@@ -33,6 +33,7 @@ function LoginPage() {
       }
     }
   }, []);
+
 
   // Function to handle form submission
   const handleLogin = async (e) => {
@@ -49,13 +50,21 @@ function LoginPage() {
     try {
       // Create credentials object to store
       const brazeCredentials = {
-        dashboard_url: dashboardUrl,
+        dashboard_number: dashboardNumber,
         session_id: sessionId,
         app_group_id: appGroupId
       };
 
       // Store credentials in localStorage for the frontend to use
       localStorage.setItem('brazeCredentials', JSON.stringify(brazeCredentials));
+      
+      // Also save in content block compatible format
+      const contentBlockCredentials = {
+        sessionId: sessionId,
+        appGroupId: appGroupId,
+        dashboardNumber: dashboardNumber
+      };
+      localStorage.setItem('brazeContentBlockCredentials', JSON.stringify(contentBlockCredentials));
       
       setSuccess(true);
       setError('');
@@ -95,6 +104,7 @@ function LoginPage() {
           border: '1px solid #E5E7EB', // --color-border-subtle
           boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'
         }}>
+
           {/* Braze Authentication Section */}
           <h3 style={{ 
             color: '#1D244F', // Deep Navy
@@ -152,12 +162,14 @@ function LoginPage() {
                 fontSize: '14px',
                 fontWeight: '500'
               }}>
-                Dashboard URL
+                Braze Dashboard Number (1-100)
               </label>
               <input
-                type="text"
-                value={dashboardUrl}
-                onChange={(e) => setDashboardUrl(e.target.value)}
+                type="number"
+                min="1"
+                max="100"
+                value={dashboardNumber}
+                onChange={(e) => setDashboardNumber(parseInt(e.target.value) || 9)}
                 style={{
                   width: '100%',
                   padding: '12px',
@@ -171,9 +183,16 @@ function LoginPage() {
                 }}
                 onFocus={(e) => e.target.style.borderColor = '#00AFB9'} // Vibrant Teal focus
                 onBlur={(e) => e.target.style.borderColor = '#E5E7EB'}
-                placeholder="https://dashboard-XX.braze.com"
+                placeholder="9"
                 required
               />
+              <p style={{
+                color: '#6B7280',
+                fontSize: '12px',
+                margin: '4px 0 0 0'
+              }}>
+                Will connect to: https://dashboard-{String(dashboardNumber).padStart(2, '0')}.braze.com
+              </p>
             </div>
 
             <div style={{ marginBottom: '20px' }}>
@@ -289,7 +308,8 @@ function LoginPage() {
                 type="button"
                 onClick={() => {
                   localStorage.removeItem('brazeCredentials');
-                  setDashboardUrl('https://dashboard-09.braze.com');
+                  localStorage.removeItem('brazeContentBlockCredentials'); // Also clear content block credentials
+                  setDashboardNumber(9);
                   setSessionId('');
                   setAppGroupId('');
                   setHasStoredCredentials(false);
@@ -352,6 +372,66 @@ function LoginPage() {
               <li>Go to Application/Storage → Cookies</li>
               <li>Find 'session_id' and 'app_group_id'</li>
             </ol>
+          </div>
+
+          {/* Tutorial Video Section - At Bottom */}
+          <div style={{
+            marginTop: '30px',
+            padding: '20px',
+            backgroundColor: '#F8F9FF', // Light blue background
+            borderRadius: '8px',
+            border: '1px solid #E0E7FF'
+          }}>
+            <h3 style={{ 
+              color: '#1D244F', // Deep Navy
+              marginBottom: '12px',
+              fontSize: '18px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              🎥 Login Tutorial Video
+            </h3>
+            <p style={{ 
+              color: '#6B7280', // --color-text-secondary
+              marginBottom: '15px',
+              fontSize: '14px'
+            }}>
+              Watch this step-by-step tutorial to learn how to find your Braze credentials and login to the migration tool.
+            </p>
+            
+            <div style={{
+              position: 'relative',
+              marginBottom: '10px'
+            }}>
+              <video
+                controls
+                style={{
+                  width: '100%',
+                  height: 'auto',
+                  borderRadius: '6px',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                }}
+                preload="metadata"
+                onError={(e) => console.error('Video error:', e)}
+                onLoadedMetadata={(e) => console.log('Video duration:', e.target.duration)}
+                onTimeUpdate={(e) => {
+                  // Log time jumps to debug the issue
+                  const currentTime = e.target.currentTime;
+                  if (currentTime > 40 && currentTime < 56) {
+                    console.log('Video time:', currentTime);
+                  }
+                }}
+                onSeeked={(e) => console.log('Video seeked to:', e.target.currentTime)}
+              >
+                {/* Prioritize MP4 for better browser compatibility */}
+                <source src="/src/assets/tutorial.mp4" type="video/mp4" />
+                <source src="/src/assets/tutorial.mov" type="video/quicktime" />
+                <p style={{ color: '#D92D20', fontSize: '14px', textAlign: 'center', padding: '20px' }}>
+                  Your browser does not support the video format. Please try using Chrome, Firefox, or Safari.
+                </p>
+              </video>
+            </div>
           </div>
         </div>
       </div>

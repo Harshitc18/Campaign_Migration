@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """
 Campaign Migration Services Launcher
-Starts all 4 services on their designated ports:
+Starts all 5 services on their designated ports:
 - Email Converter: 8080
 - Push Converter: 8081  
 - Campaign Fetcher: 8082
 - SMS Converter: 8083
+- Content Block Converter: 8084
 """
 
 import subprocess
@@ -22,7 +23,8 @@ class ServiceLauncher:
             {"name": "Email Converter", "file": "email/email_converter.py", "port": 8080},
             {"name": "Push Converter", "file": "push/push_converter.py", "port": 8081},
             {"name": "Campaign Fetcher", "file": "campaign_fetcher/braze_campaign_fetcher.py", "port": 8082},
-            {"name": "SMS Converter", "file": "sms/sms_converter.py", "port": 8083}
+            {"name": "SMS Converter", "file": "sms/sms_converter.py", "port": 8083},
+            {"name": "Content Block Converter", "file": "Content_block/content_block_fetcher.py", "port": 8084}
         ]
         
     def start_service(self, service):

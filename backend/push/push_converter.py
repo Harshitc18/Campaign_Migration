@@ -252,6 +252,39 @@ class BrazeCdnToMoenageCdn:
         print(f"Image processing completed")
         return payload
 
+    @staticmethod
+    def process_single_image_url(image_url, headers):
+        """Process a single image URL for conversion from Braze CDN to MoEngage CDN"""
+        if not image_url:
+            return ""
+        
+        print(f"Processing single image: {image_url}")
+        
+        # Download the image
+        file_name = BrazeCdnToMoenageCdn.__download_image(image_url)
+        if file_name:
+            print(f"  ✅ Downloaded as: {file_name}")
+            
+            # Upload to MoEngage
+            moe_cdn_url = BrazeCdnToMoenageCdn.__upload_image(file_name, headers)
+            if moe_cdn_url:
+                print(f"  ✅ Uploaded to MoEngage: {moe_cdn_url}")
+                
+                # Clean up downloaded file
+                try: 
+                    os.remove(file_name)
+                    print(f"  🗑️ Cleaned up temporary file")
+                except Exception as e:
+                    print(f"  ⚠️ Failed to clean up file {file_name}: {e}")
+                
+                return moe_cdn_url
+            else:
+                print(f"  ❌ Failed to upload to MoEngage")
+        else:
+            print(f"  ❌ Failed to download image")
+        
+        return image_url  # Return original URL if processing fails
+
 class PushCampaignMigrator: #
     """
     Production-ready push campaign migrator from Braze to MoEngage.
@@ -404,27 +437,109 @@ class PushCampaignMigrator: #
         elif content_type == "summary" and len(content) > self.MAX_SUMMARY_LENGTH: content = content[:self.MAX_SUMMARY_LENGTH-3] + "..." #
         return content.strip() #
 
+    def _map_android_buttons(self, android_action: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Map Braze Android push buttons to MoEngage format"""
+        buttons = []
+        android_buttons = android_action.get("android_push_buttons", [])
+        
+        for button in android_buttons:
+            action_type = button.get("action_type", "")
+            button_text = button.get("text", "button")
+            uri = button.get("uri", "")
+            
+            if action_type == "DEEP_LINK":
+                buttons.append({
+                    "ndANDROIDDeeplinking": [],
+                    "type": "deeplinking",
+                    "deeplinkingURL": convert_liquid_to_jinja(uri),
+                    "btnName": button_text
+                })
+            elif action_type == "URI":
+                buttons.append({
+                    "ndANDROIDRichlanding": [],
+                    "type": "richlanding", 
+                    "richLandingURL": convert_liquid_to_jinja(uri),
+                    "btnName": button_text
+                })
+        
+        return buttons
+
+    def _map_ios_buttons(self, ios_action: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Map Braze iOS push buttons to MoEngage format"""
+        # For iOS, the value remains unchanged with INVITE_CATEGORY type
+        ios_buttons = ios_action.get("ios_push_buttons", [])
+        
+        if ios_buttons:
+            return [{"type": "INVITE_CATEGORY"}]
+        else:
+            return []
+
+    def _map_web_buttons(self, web_action: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Map Braze Web push buttons to MoEngage format"""
+        buttons = []
+        web_buttons = web_action.get("web_push_buttons", [])
+        
+        # Start with empty object for web buttons
+        if web_buttons:
+            buttons.append({})  # First element is always empty object
+            
+            for i, button in enumerate(web_buttons):
+                button_text = button.get("text", "button")
+                uri = button.get("uri", "")
+                
+                buttons.append({
+                    "action": i + 1,
+                    "title": button_text,
+                    "url": convert_liquid_to_jinja(uri)
+                })
+        
+        return buttons
+
     def _map_android_push(self, android_action: Dict[str, Any]) -> Dict[str, Any]: #
         android_config = {"msgtitle": convert_liquid_to_jinja(self._sanitize_content(android_action.get("android_title", ""), "title")), "msg": convert_liquid_to_jinja(self._sanitize_content(android_action.get("android_push_message", ""), "message"))} #
+        
+        # Handle image
         image_url = android_action.get("image_url") #
         if image_url: #
             final_image_url = BrazeCdnToMoenageCdn.process_single_image_url(image_url, self.cdn_headers) #
             android_config["widgetArray"] = [{"WidgetName": "image", "inputImageURL": final_image_url, "selectedImageUploadType": "url"}] #
-        custom_uri = android_action.get("android_custom_uri") #
-        if custom_uri: android_config["actionArray"] = [{"ndANDROIDDeeplinking": [], "type": "deeplinking", "deeplinkingURL": convert_liquid_to_jinja(custom_uri)}] #
-        else: android_config["actionArray"] = [{"ndANDROIDDeeplinking": [], "type": "deeplinking", "deeplinkingURL": ""}] #
+        
+        # Handle buttons
+        button_actions = self._map_android_buttons(android_action)
+        if button_actions:
+            android_config["actionArray"] = button_actions
+        else:
+            # Fallback to custom URI or default
+            custom_uri = android_action.get("android_custom_uri") #
+            if custom_uri: 
+                android_config["actionArray"] = [{"ndANDROIDDeeplinking": [], "type": "deeplinking", "deeplinkingURL": convert_liquid_to_jinja(custom_uri)}] #
+            else: 
+                android_config["actionArray"] = [{"ndANDROIDDeeplinking": [], "type": "deeplinking", "deeplinkingURL": ""}] #
+        
         return android_config #
 
     def _map_ios_push(self, ios_action: Dict[str, Any]) -> Dict[str, Any]: #
         ios_alert = ios_action.get("ios_alert_hash", {}) #
         ios_config = {"title": convert_liquid_to_jinja(self._sanitize_content(ios_alert.get("title", ""), "title")), "body": convert_liquid_to_jinja(self._sanitize_content(ios_action.get("ios_push_message", ""), "message"))} #
+        
+        # Handle image
         image_url = ios_action.get("ios_image_url") #
         if image_url: #
             final_image_url = BrazeCdnToMoenageCdn.process_single_image_url(image_url, self.cdn_headers) #
             ios_config["widgetArray"] = [{"WidgetName": "image", "inputImageURL": final_image_url, "selectedImageUploadType": "url"}] #
-        ios_uri = ios_action.get("ios_uri") #
-        if ios_uri: ios_config["actionArray"] = [{"actionKVPairs": [], "type": "deeplinking", "deeplinkingURL": convert_liquid_to_jinja(ios_uri)}] #
-        else: ios_config["actionArray"] = [{"actionKVPairs": [], "type": "deeplinking", "deeplinkingURL": ""}] #
+        
+        # Handle buttons
+        button_actions = self._map_ios_buttons(ios_action)
+        if button_actions:
+            ios_config["actionArray"] = button_actions
+        else:
+            # Fallback to custom URI or default
+            ios_uri = ios_action.get("ios_uri") #
+            if ios_uri: 
+                ios_config["actionArray"] = [{"actionKVPairs": [], "type": "deeplinking", "deeplinkingURL": convert_liquid_to_jinja(ios_uri)}] #
+            else: 
+                ios_config["actionArray"] = [{"actionKVPairs": [], "type": "deeplinking", "deeplinkingURL": ""}] #
+        
         return ios_config #
 
     def _map_web_push(self, web_action: Dict[str, Any]) -> Dict[str, Any]:
@@ -432,15 +547,24 @@ class PushCampaignMigrator: #
             "msgtitle": convert_liquid_to_jinja(self._sanitize_content(web_action.get("web_title", ""), "title")),
             "msg": convert_liquid_to_jinja(self._sanitize_content(web_action.get("web_push_message", ""), "message"))
         }       
+        
+        # Handle image
         image_url = web_action.get("image_url") or web_action.get("large_image_url")
         if image_url:
             final_image_url = BrazeCdnToMoenageCdn.process_single_image_url(image_url, self.cdn_headers)
             web_config["imageUrl"] = final_image_url
             web_config["widgetArray"] = [{"WidgetName": "image", "inputImageURL": final_image_url, "selectedImageUploadType": "url"}]
 
-        web_uri = web_action.get("web_custom_uri")
-        if web_uri:
-            web_config["redirectURL"] = convert_liquid_to_jinja(web_uri)       
+        # Handle buttons
+        button_actions = self._map_web_buttons(web_action)
+        if button_actions:
+            web_config["actionArray"] = button_actions
+        else:
+            # Fallback to custom URI
+            web_uri = web_action.get("web_custom_uri")
+            if web_uri:
+                web_config["redirectURL"] = convert_liquid_to_jinja(web_uri)       
+        
         return web_config 
 
     def update_payload_from_json(self, base_payload: Dict[str, Any], campaign_data: Dict[str, Any]) -> Dict[str, Any]: #

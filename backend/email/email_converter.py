@@ -318,13 +318,30 @@ class EmailCampaignMigrator:
                 "selectedTargetaudience": "custom_filters",
                 "triggerDelayType": "delay",
                 "subscription_category_name": "allEmails",
-                "c_at_trigger_seg_v2": {"included_filters": {"filter_operator": "or", "filters": [
-                    {
-                        "filter_type": "actions",
-                        "action_name": "MOE_APP_OPENED",
-                        "execution": {"type": "atleast", "count": 1}
+                
+                # --- UPDATED SECTION ---
+                "c_at_trigger_seg_v2": {
+                    "included_filters": {
+                        "filter_operator": "or",
+                        "filters": [
+                            {
+                                "filter_type": "actions",
+                                "action_name": "MOE_APP_OPENED",
+                                "execution": {
+                                    "type": "atleast",
+                                    "count": 1
+                                },
+                                "executed": True,
+                                "attributes": {
+                                    "filter_operator": "and",
+                                    "filters": []
+                                }
+                            }
+                        ]
                     }
-                ]}},
+                },
+                # --- END OF UPDATED SECTION ---
+                
                 "new_segmentation_data": {"included_filters": {"filter_operator": "and", "filters": [
                     {
                         "filter_type": "custom_segments",

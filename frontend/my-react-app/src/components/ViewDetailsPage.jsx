@@ -35,7 +35,7 @@ function ViewDetailsPage() {
         // Make API call to get detailed campaign information using FastAPI
         const response = await axios.get(`http://localhost:8082/campaigns/${campaignId}/`, {
           headers: {
-            'X-Dashboard-Url': credentials.dashboard_url,
+            'X-Dashboard-Url': `https://dashboard-${String(credentials.dashboard_number || 9).padStart(2, '0')}.braze.com`,
             'X-Session-Id': credentials.session_id,
             'X-App-Group-Id': credentials.app_group_id,
           },
@@ -386,74 +386,6 @@ function ViewDetailsPage() {
                   fontWeight: '500'
                 }}>
                   {campaignDetails.campaign.campaign_type || 'Unknown'}
-                </div>
-              </div>
-              <div style={{
-                padding: '16px',
-                backgroundColor: '#F9FAFB', // --color-bg-primary
-                borderRadius: '8px',
-                border: '1px solid #E5E7EB'
-              }}>
-                <div style={{ 
-                  fontWeight: '600', 
-                  color: '#6B7280', // --color-text-secondary
-                  fontSize: '14px',
-                  marginBottom: '4px'
-                }}>
-                  Status
-                </div>
-                <div style={{ 
-                  color: '#1D244F', // Deep Navy
-                  fontSize: '16px',
-                  fontWeight: '500'
-                }}>
-                  {campaignDetails.campaign.status || 'Unknown'}
-                </div>
-              </div>
-              <div style={{
-                padding: '16px',
-                backgroundColor: '#F9FAFB', // --color-bg-primary
-                borderRadius: '8px',
-                border: '1px solid #E5E7EB'
-              }}>
-                <div style={{ 
-                  fontWeight: '600', 
-                  color: '#6B7280', // --color-text-secondary
-                  fontSize: '14px',
-                  marginBottom: '4px'
-                }}>
-                  Created Date
-                </div>
-                <div style={{ 
-                  color: '#1D244F', // Deep Navy
-                  fontSize: '16px',
-                  fontWeight: '500'
-                }}>
-                  {campaignDetails.campaign.created_at ? 
-                    new Date(campaignDetails.campaign.created_at).toLocaleDateString() : 'Unknown'}
-                </div>
-              </div>
-              <div style={{
-                padding: '16px',
-                backgroundColor: '#F9FAFB', // --color-bg-primary
-                borderRadius: '8px',
-                border: '1px solid #E5E7EB'
-              }}>
-                <div style={{ 
-                  fontWeight: '600', 
-                  color: '#6B7280', // --color-text-secondary
-                  fontSize: '14px',
-                  marginBottom: '4px'
-                }}>
-                  Last Edited
-                </div>
-                <div style={{ 
-                  color: '#1D244F', // Deep Navy
-                  fontSize: '16px',
-                  fontWeight: '500'
-                }}>
-                  {campaignDetails.campaign.last_edited ? 
-                    new Date(campaignDetails.campaign.last_edited).toLocaleDateString() : 'Unknown'}
                 </div>
               </div>
             </div>

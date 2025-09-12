@@ -38,7 +38,7 @@ function CampaignsPage() {
         // Make the API call directly to the FastAPI Braze Campaign Fetcher
         const response = await axios.get('http://localhost:8082/campaigns/', {
           headers: {
-            'X-Dashboard-Url': credentials.dashboard_url,
+            'X-Dashboard-Url': `https://dashboard-${String(credentials.dashboard_number || 9).padStart(2, '0')}.braze.com`,
             'X-Session-Id': credentials.session_id,
             'X-App-Group-Id': credentials.app_group_id,
           },
@@ -46,13 +46,18 @@ function CampaignsPage() {
 
         // The FastAPI returns an array of campaign summaries directly
         if (response.data && Array.isArray(response.data)) {
+          // Debug: Log the first campaign to see the actual data structure
+          if (response.data.length > 0) {
+            console.log('Sample campaign data from API:', response.data[0]);
+          }
+          
           // Map the FastAPI response format to the expected frontend format
           const mappedCampaigns = response.data.map(campaign => ({
             id: campaign.id,
             name: campaign.name,
             type: campaign.type === 'multi' ? 'multi' : campaign.type, // Keep 'multi' for push campaigns
-            status: campaign.status,
-            last_edited: campaign.last_edited,
+            created: campaign.created,
+            last_edit: campaign.last_edit,
             message_types: campaign.message_types || [],
             variation_count: campaign.variation_count || 0
           }));
@@ -113,6 +118,11 @@ function CampaignsPage() {
 
   const handleMigrate = (campaign) => {
     // For single campaign migration, add to selection and show MoEngage auth
+    console.log('🚀 Single campaign migration triggered for:', campaign.name);
+    // Clear any previous migration status to avoid conflicts
+    console.log('🗑️ Clearing previous migration status...');
+    localStorage.removeItem('migrationStatus');
+    localStorage.removeItem('migrationData');
     setSelectedCampaigns(new Set([campaign.id]));
     setShowMoEngageAuth(true);
   };
@@ -146,32 +156,51 @@ function CampaignsPage() {
 
   const handleBulkMigrate = () => {
     if (selectedCampaigns.size > 0) {
+      // Clear any previous migration status to avoid conflicts
+      console.log('🗑️ Clearing previous migration status...');
+      localStorage.removeItem('migrationStatus');
+      localStorage.removeItem('migrationData');
       setShowMoEngageAuth(true);
     }
   };
 
   const handleMoEngageAuth = async (moEngageCredentials, campaignIds) => {
     try {
+      console.log('🚀 Starting migration setup...');
+      console.log('Selected campaign IDs:', Array.from(campaignIds));
+      console.log('MoEngage credentials received:', Object.keys(moEngageCredentials));
+      
       // Get Braze credentials from localStorage (fix the key name)
       const brazeCredentials = localStorage.getItem('brazeCredentials');
       const parsedBrazeCredentials = brazeCredentials ? JSON.parse(brazeCredentials) : null;
       
+      console.log('Braze credentials from localStorage:', parsedBrazeCredentials ? 'Found' : 'Not found');
+      
       // Navigate to migration progress page
       const selectedCampaignData = campaigns.filter(c => campaignIds.has(c.id));
+      console.log('Selected campaign data:', selectedCampaignData);
       
       // Store migration data in localStorage for the migration page
-      localStorage.setItem('migrationData', JSON.stringify({
+      const migrationData = {
         campaigns: selectedCampaignData,
         moEngageCredentials: moEngageCredentials,
         brazeCredentials: parsedBrazeCredentials,
         timestamp: Date.now()
-      }));
+      };
+      
+      console.log('Storing migration data in localStorage:', migrationData);
+      localStorage.setItem('migrationData', JSON.stringify(migrationData));
+      
+      // Verify storage was successful
+      const storedData = localStorage.getItem('migrationData');
+      console.log('✅ Migration data stored successfully:', storedData ? 'Yes' : 'No');
       
       // Navigate to migration progress page
+      console.log('🔄 Navigating to migration progress page...');
       navigate('/migration-progress');
       
     } catch (error) {
-      console.error('Migration setup error:', error);
+      console.error('❌ Migration setup error:', error);
       // Handle error appropriately
     }
     
@@ -491,7 +520,7 @@ function CampaignsPage() {
               {/* Table Header */}
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: '50px 1fr 120px 100px 150px 200px',
+                gridTemplateColumns: '50px 1fr 120px 200px',
                 gap: '16px',
                 padding: '16px 20px',
                 backgroundColor: '#F9FAFB', // --color-bg-primary
@@ -504,8 +533,6 @@ function CampaignsPage() {
                 <div>SELECT</div>
                 <div>CAMPAIGN NAME</div>
                 <div>TYPE</div>
-                <div>STATUS</div>
-                <div>LAST EDITED</div>
                 <div style={{ textAlign: 'center' }}>ACTIONS</div>
               </div>
 
@@ -515,7 +542,7 @@ function CampaignsPage() {
                   key={campaign.id}
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: '50px 1fr 120px 100px 150px 200px',
+                    gridTemplateColumns: '50px 1fr 120px 200px',
                     gap: '16px',
                     padding: '16px 20px',
                     borderBottom: index < currentCampaigns.length - 1 ? '1px solid #E5E7EB' : 'none',
@@ -625,34 +652,6 @@ function CampaignsPage() {
                     </span>
                   </div>
 
-                  {/* Status */}
-                  <div>
-                    <span style={{
-                      backgroundColor: campaign.status === 'Active' ? '#E6F9F4' : 
-                                     campaign.status === 'Draft' ? '#FEF3C7' : '#FEE4E2',
-                      color: campaign.status === 'Active' ? '#008767' : 
-                             campaign.status === 'Draft' ? '#D97706' : '#D92D20',
-                      padding: '4px 8px',
-                      borderRadius: '12px',
-                      fontSize: '12px',
-                      fontWeight: '600',
-                      display: 'inline-block'
-                    }}>
-                      {campaign.status}
-                    </span>
-                  </div>
-
-                  {/* Last Edited */}
-                  <div style={{
-                    color: '#111827', // --color-text-primary
-                    fontSize: '14px'
-                  }}>
-                    {new Date(campaign.last_edited).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric'
-                    })}
-                  </div>
 
                   {/* Actions */}
                   <div style={{
